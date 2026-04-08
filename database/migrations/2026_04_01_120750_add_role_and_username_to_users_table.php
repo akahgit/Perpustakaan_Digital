@@ -11,9 +11,10 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('username', 100)->unique()->after('id');
-            $table->enum('role', ['admin', 'petugas', 'anggota'])
-                  ->default('anggota')
-                  ->after('password');
+            $table->enum('role', ['kepala', 'petugas', 'anggota'])
+                ->default('anggota')
+                ->after('password');
+
             $table->softDeletes()->after('updated_at');
             $table->index('role');
             $table->index('username');

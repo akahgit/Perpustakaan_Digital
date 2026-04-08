@@ -10,33 +10,35 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    /**
-     * Tampilkan form login
-     */
+
     public function showLoginForm()
     {
         return view('auth.login');
     }
 
-    /**
-     * Proses login
-     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'string'], // Bisa email atau username/NIS
+            'email' => ['required', 'string'],
             'password' => ['required'],
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            // Redirect berdasarkan role (opsional, default ke halaman sebelumnya)
-            return redirect()->intended(route('home'));
+            $user = Auth::user();
+
+            if ($user->role === 'kepala') {
+                return redirect()->intended(route('kepala.dashboard'));
+            } elseif ($user->role === 'petugas') {
+                return redirect()->intended(route('petugas.dashboard'));
+            } else {
+                return redirect()->intended(route('home'));
+            }
         }
 
         return back()->withErrors([
-            'email' => 'Username/NIS atau kata sandi salah.',
+            'email' => 'Username/Email atau password salah.',
         ])->onlyInput('email');
     }
 
@@ -48,9 +50,6 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    /**
-     * Proses register
-     */
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -61,42 +60,36 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
-        // 1. Buat User
         $user = User::create([
-            'username' => $validated['nis_nisn'], // Username default = NIS
+            'username' => $validated['nis_nisn'], 
             'name' => $validated['nama'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => 'anggota',
         ]);
 
-        // 2. Buat Data Anggota
         Anggota::create([
             'user_id' => $user->id,
             'nama' => $validated['nama'],
             'nis_nisn' => $validated['nis_nisn'],
             'kelas' => $validated['kelas'],
             'alamat' => '-',
-            'jenis_kelamin' => 'L', // Default, bisa diedit nanti di profil
+            'jenis_kelamin' => 'L',
             'no_telepon' => '-',
             'email' => $validated['email'],
             'tanggal_bergabung' => now(),
             'status' => 'aktif',
         ]);
 
-        // Langsung login setelah register
         Auth::login($user);
 
         return redirect()->route('home')->with('success', 'Akun berhasil dibuat! Selamat datang.');
     }
 
-    /**
-     * Proses logout
-     */
     public function logout(Request $request)
     {
         Auth::logout();
-        
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

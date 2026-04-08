@@ -18,71 +18,71 @@ class InitialDataSeeder extends Seeder
     public function run(): void
     {
         // =====================
-        // 1. ADMIN USER
+        // 1. KEPALA PERPUSTAKAAN (Sebelumnya Admin)
         // =====================
-        $admin = User::create([
-            'username' => 'admin',
-            'name' => 'Administrator',
-            'email' => 'admin@perpustakaan.com',
+        $kepala = User::create([
+            'username' => 'kepala',
+            'name' => 'Dr. Kartini Putri',
+            'email' => 'kepala@perpus.com',
             'password' => Hash::make('password'),
-            'role' => 'admin',
+            'role' => 'kepala', // REVISI: Menggunakan 'kepala'
         ]);
 
         Petugas::create([
-            'user_id' => $admin->id,
-            'nama' => 'Administrator',
-            'nip' => 'ADM001',
+            'user_id' => $kepala->id,
+            'nama' => 'Dr. Kartini Putri',
+            'nip' => 'KP001',
             'alamat' => 'Perpustakaan Sekolah',
-            'jenis_kelamin' => 'L',
+            'jenis_kelamin' => 'P',
             'no_telepon' => '08123456789',
-            'email' => 'admin@perpustakaan.com',
+            'email' => 'kepala@perpus.com',
             'jabatan' => 'kepala_perpustakaan',
             'tanggal_bergabung' => now(),
         ]);
 
         // =====================
-        // 2. PETUGAS USER
+        // 2. PETUGAS PERPUSTAKAAN
         // =====================
         $petugas = User::create([
-            'username' => 'petugas1',
-            'name' => 'Petugas Perpustakaan',
-            'email' => 'petugas1@perpustakaan.com',
+            'username' => 'petugas',
+            'name' => 'Ahmad Suryana',
+            'email' => 'petugas@perpus.com',
             'password' => Hash::make('password'),
             'role' => 'petugas',
         ]);
 
         Petugas::create([
             'user_id' => $petugas->id,
-            'nama' => 'Petugas Perpustakaan',
+            'nama' => 'Ahmad Suryana',
             'nip' => 'PTG001',
             'alamat' => 'Perpustakaan Sekolah',
-            'jenis_kelamin' => 'P',
+            'jenis_kelamin' => 'L',
             'no_telepon' => '08123456788',
-            'email' => 'petugas1@perpustakaan.com',
+            'email' => 'petugas@perpus.com',
             'jabatan' => 'petugas_perpustakaan',
             'tanggal_bergabung' => now(),
         ]);
 
         // =====================
-        // 3. ANGGOTA USER (DEMO)
+        // 3. ANGGOTA (SISWA)
         // =====================
         $anggota = User::create([
-            'username' => 'siswa1',
-            'name' => 'Ahmad Siswa',
-            'email' => 'siswa1@sekolah.com',
+            'username' => '12345', // NIS sebagai username login
+            'name' => 'Andi Saputra',
+            'email' => 'siswa@sekolah.com',
             'password' => Hash::make('password'),
             'role' => 'anggota',
         ]);
 
         Anggota::create([
             'user_id' => $anggota->id,
-            'nama' => 'Ahmad Siswa',
-            'nis_nisn' => '1234567890',
-            'kelas' => 'XII IPA 1',
-            'alamat' => 'Jl. Contoh No. 123',
+            'nama' => 'Andi Saputra',
+            'nis_nisn' => '12345',
+            'kelas' => 'XII Rpl 1',
+            'alamat' => 'Jl. Merdeka No. 45, Jakarta',
             'jenis_kelamin' => 'L',
-            'no_telepon' => '08123456787',
-            'email' => 'siswa1@sekolah.com',
+            'no_telepon' => '081234567890',
+            'email' => 'siswa@sekolah.com',
             'tanggal_bergabung' => now(),
             'status' => 'aktif',
         ]);
@@ -91,14 +91,11 @@ class InitialDataSeeder extends Seeder
         // 4. KATEGORI BUKU
         // =====================
         $kategoris = [
-            ['nama_kategori' => 'Matematika', 'deskripsi' => 'Buku Matematika', 'warna' => '#EF4444'],
-            ['nama_kategori' => 'Bahasa Indonesia', 'deskripsi' => 'Buku Bahasa Indonesia', 'warna' => '#F59E0B'],
-            ['nama_kategori' => 'Bahasa Inggris', 'deskripsi' => 'Buku Bahasa Inggris', 'warna' => '#10B981'],
-            ['nama_kategori' => 'Fisika', 'deskripsi' => 'Buku Fisika', 'warna' => '#3B82F6'],
-            ['nama_kategori' => 'Kimia', 'deskripsi' => 'Buku Kimia', 'warna' => '#8B5CF6'],
-            ['nama_kategori' => 'Biologi', 'deskripsi' => 'Buku Biologi', 'warna' => '#EC4899'],
-            ['nama_kategori' => 'Sejarah', 'deskripsi' => 'Buku Sejarah', 'warna' => '#6366F1'],
-            ['nama_kategori' => 'Ekonomi', 'deskripsi' => 'Buku Ekonomi', 'warna' => '#14B8A6'],
+            ['nama_kategori' => 'Novel', 'deskripsi' => 'Karya sastra fiksi', 'warna' => '#8B5CF6'],
+            ['nama_kategori' => 'Sains', 'deskripsi' => 'Buku ilmiah & sains', 'warna' => '#10B981'],
+            ['nama_kategori' => 'Sejarah', 'deskripsi' => 'Buku sejarah & biografi', 'warna' => '#F59E0B'],
+            ['nama_kategori' => 'Self-Help', 'deskripsi' => 'Pengembangan diri', 'warna' => '#EF4444'],
+            ['nama_kategori' => 'Teknologi', 'deskripsi' => 'Komputer & teknologi', 'warna' => '#3B82F6'],
         ];
 
         foreach ($kategoris as $kategori) {
@@ -109,11 +106,11 @@ class InitialDataSeeder extends Seeder
         }
 
         // Output info
-        $this->command->info('✅ Initial data berhasil dibuat!');
+        $this->command->info('✅ Database berhasil di-reset dan diisi data awal!');
         $this->command->info('');
-        $this->command->info('📧 Login credentials:');
-        $this->command->info('   Admin:   admin@perpustakaan.com / password');
-        $this->command->info('   Petugas: petugas1@perpustakaan.com / password');
-        $this->command->info('   Anggota: siswa1@sekolah.com / password');
+        $this->command->info('🔑 LOGIN CREDENTIALS (Username / Email & Password):');
+        $this->command->info('   👤 Kepala:  kepala / kepala@perpus.com  → password');
+        $this->command->info('   👮 Petugas: petugas / petugas@perpus.com → password');
+        $this->command->info('   🎓 Anggota: 12345 / siswa@sekolah.com    → password');
     }
 }
