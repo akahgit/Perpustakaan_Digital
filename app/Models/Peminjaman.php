@@ -22,6 +22,8 @@ class Peminjaman extends Model
         'tanggal_kembali_realisasi',
         'durasi_pinjam',
         'status_peminjaman',
+        'kondisi_pengembalian',
+        'catatan_kondisi',
         'catatan',
     ];
 
@@ -45,16 +47,16 @@ class Peminjaman extends Model
         return $this->belongsTo(Buku::class, 'id_buku', 'id_buku');
     }
 
-    // Relasi ke Petugas (User)
+    // Relasi ke Petugas
     public function petugas()
     {
-        return $this->belongsTo(User::class, 'id_petugas');
+        return $this->belongsTo(Petugas::class, 'id_petugas', 'id_petugas');
     }
 
-    // Scope: Ambil yang sedang aktif (dipinjam atau menunggu konfirmasi)
+    // Scope: Ambil yang sedang aktif (dipinjam, terlambat, atau menunggu konfirmasi)
     public function scopeAktif($query)
     {
-        return $query->whereIn('status_peminjaman', ['dipinjam', 'menunggu_konfirmasi']);
+        return $query->whereIn('status_peminjaman', ['dipinjam', 'terlambat', 'menunggu_konfirmasi']);
     }
 
     // Helper: Cek keterlambatan

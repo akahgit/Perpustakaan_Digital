@@ -1,195 +1,380 @@
 @extends('layouts.petugas')
 
-@section('title', 'Dashboard Petugas')
+@section('title', 'Dashboard Petugas — Perpustakan Digital')
 @section('page-title', 'Dashboard')
+@section('page-subtitle')
+    Selamat datang kembali, {{ auth()->user()->name }}
+@endsection
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6 animate-fade-in-down">
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Card 1: Total Buku -->
-        <div class="bg-[#1e293b] rounded-2xl p-6 border border-slate-700/50 shadow-xl relative overflow-hidden group hover:border-indigo-500/30 transition">
-            <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-            <div class="relative z-10">
-                <p class="text-slate-400 text-sm font-medium mb-1">Total Koleksi</p>
-                <h3 class="text-3xl font-bold text-white">{{ number_format($totalJudul) }} <span class="text-lg text-slate-500 font-normal">Judul</span></h3>
-                <p class="text-xs text-slate-500 mt-1">{{ number_format($totalEksemplar) }} Eksemplar • {{ $stokTersedia }} Tersedia</p>
+    {{-- ══════════════════════════════════════════════
+         ROW 1 — STAT CARDS
+         ══════════════════════════════════════════════ --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
+
+        {{-- Card: Total Koleksi --}}
+        <div class="relative bg-[#1e293b] rounded-2xl p-5 border border-white/5 shadow-xl overflow-hidden group hover:border-indigo-500/30 hover:shadow-indigo-500/10 transition-all duration-300 cursor-default">
+            {{-- Glow orb --}}
+            <div class="absolute -top-6 -right-6 w-28 h-28 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-indigo-500/20 transition-colors"></div>
+
+            <div class="relative z-10 flex items-start justify-between">
+                <div class="flex-1">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Total Koleksi</p>
+                    <div class="flex items-end gap-2 mb-1.5">
+                        <span class="text-3xl font-extrabold text-white tracking-tight leading-none">{{ number_format($totalJudul) }}</span>
+                        <span class="text-sm text-slate-500 font-medium mb-0.5">Judul</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-xs">
+                        <span class="text-slate-500">{{ number_format($totalEksemplar) }} eks •</span>
+                        <span class="text-emerald-400 font-semibold">{{ $stokTersedia }} tersedia</span>
+                    </div>
+                </div>
+                {{-- Icon --}}
+                <div class="w-11 h-11 bg-indigo-500/15 border border-indigo-500/20 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <i class="fas fa-book text-indigo-400 text-base"></i>
+                </div>
             </div>
-            <div class="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 absolute bottom-4 right-4 group-hover:scale-110 transition">
-                <i class="fas fa-book text-xl"></i>
+
+            {{-- Trend indicator --}}
+            <div class="relative z-10 mt-4 pt-3 border-t border-white/5 flex items-center gap-1.5">
+                <i class="fas fa-arrow-trend-up text-emerald-400 text-xs"></i>
+                <span class="text-xs text-slate-500">Koleksi terus bertambah</span>
             </div>
         </div>
 
-        <!-- Card 2: Anggota Aktif -->
-        <div class="bg-[#1e293b] rounded-2xl p-6 border border-purple-500/20 shadow-xl relative overflow-hidden group hover:border-purple-500/30 transition">
-            <div class="absolute right-0 top-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-            <div class="relative z-10">
-                <p class="text-slate-400 text-sm font-medium mb-1">Anggota Aktif</p>
-                <h3 class="text-3xl font-bold text-purple-400">{{ number_format($anggotaAktif) }}</h3>
-                <p class="text-xs text-emerald-400 mt-1"><i class="fas fa-plus-circle mr-1"></i> +{{ $anggotaBaruBulanIni }} bulan ini</p>
+        {{-- Card: Anggota Aktif --}}
+        <div class="relative bg-[#1e293b] rounded-2xl p-5 border border-white/5 shadow-xl overflow-hidden group hover:border-violet-500/30 hover:shadow-violet-500/10 transition-all duration-300 cursor-default">
+            <div class="absolute -top-6 -right-6 w-28 h-28 bg-violet-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-violet-500/20 transition-colors"></div>
+
+            <div class="relative z-10 flex items-start justify-between">
+                <div class="flex-1">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Anggota Aktif</p>
+                    <div class="flex items-end gap-2 mb-1.5">
+                        <span class="text-3xl font-extrabold text-white tracking-tight leading-none">{{ number_format($anggotaAktif) }}</span>
+                        <span class="text-sm text-slate-500 font-medium mb-0.5">Orang</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-xs">
+                        @if($anggotaBaruBulanIni > 0)
+                            <i class="fas fa-circle-plus text-emerald-400 text-[10px]"></i>
+                            <span class="text-emerald-400 font-semibold">+{{ $anggotaBaruBulanIni }}</span>
+                            <span class="text-slate-500">bulan ini</span>
+                        @else
+                            <span class="text-slate-500">Tidak ada tambahan bulan ini</span>
+                        @endif
+                    </div>
+                </div>
+                <div class="w-11 h-11 bg-violet-500/15 border border-violet-500/20 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <i class="fas fa-users text-violet-400 text-base"></i>
+                </div>
             </div>
-            <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 absolute bottom-4 right-4 group-hover:scale-110 transition">
-                <i class="fas fa-users text-xl"></i>
+
+            <div class="relative z-10 mt-4 pt-3 border-t border-white/5 flex items-center gap-1.5">
+                @if($anggotaBaruBulanIni > 0)
+                    <i class="fas fa-arrow-trend-up text-emerald-400 text-xs"></i>
+                    <span class="text-xs text-emerald-400 font-medium">+{{ $anggotaBaruBulanIni }} anggota baru</span>
+                @else
+                    <i class="fas fa-minus text-slate-600 text-xs"></i>
+                    <span class="text-xs text-slate-500">Stabil bulan ini</span>
+                @endif
             </div>
         </div>
 
-        <!-- Card 3: Sedang Dipinjam -->
-        <div class="bg-[#1e293b] rounded-2xl p-6 border border-amber-500/20 shadow-xl relative overflow-hidden group hover:border-amber-500/30 transition">
-            <div class="absolute right-0 top-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-            <div class="relative z-10">
-                <p class="text-slate-400 text-sm font-medium mb-1">Sedang Dipinjam</p>
-                <h3 class="text-3xl font-bold text-amber-400">{{ number_format($peminjamanAktif) }}</h3>
-                <p class="text-xs text-red-400 mt-1"><i class="fas fa-exclamation-triangle mr-1"></i> {{ $terlambat }} Terlambat</p>
+        {{-- Card: Sedang Dipinjam --}}
+        <div class="relative bg-[#1e293b] rounded-2xl p-5 border border-white/5 shadow-xl overflow-hidden group hover:border-amber-500/30 hover:shadow-amber-500/10 transition-all duration-300 cursor-default">
+            <div class="absolute -top-6 -right-6 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-500/20 transition-colors"></div>
+
+            <div class="relative z-10 flex items-start justify-between">
+                <div class="flex-1">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Sedang Dipinjam</p>
+                    <div class="flex items-end gap-2 mb-1.5">
+                        <span class="text-3xl font-extrabold text-white tracking-tight leading-none">{{ number_format($peminjamanAktif) }}</span>
+                        <span class="text-sm text-slate-500 font-medium mb-0.5">Buku</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-xs">
+                        @if($terlambat > 0)
+                            <i class="fas fa-triangle-exclamation text-rose-400 text-[10px]"></i>
+                            <span class="text-rose-400 font-semibold">{{ $terlambat }}</span>
+                            <span class="text-slate-500">terlambat</span>
+                        @else
+                            <i class="fas fa-check text-emerald-400 text-[10px]"></i>
+                            <span class="text-emerald-400 font-semibold">Semua tepat waktu</span>
+                        @endif
+                    </div>
+                </div>
+                <div class="w-11 h-11 bg-amber-500/15 border border-amber-500/20 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <i class="fas fa-hand-holding-book text-amber-400 text-base"></i>
+                </div>
             </div>
-            <div class="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center text-amber-400 absolute bottom-4 right-4 group-hover:scale-110 transition">
-                <i class="fas fa-hand-holding-book text-xl"></i>
+
+            <div class="relative z-10 mt-4 pt-3 border-t border-white/5 flex items-center gap-1.5">
+                @if($terlambat > 0)
+                    <i class="fas fa-arrow-trend-down text-rose-400 text-xs"></i>
+                    <span class="text-xs text-rose-400 font-medium">{{ $terlambat }} terlambat kembali</span>
+                @else
+                    <i class="fas fa-circle-check text-emerald-400 text-xs"></i>
+                    <span class="text-xs text-slate-500">Tidak ada keterlambatan</span>
+                @endif
             </div>
         </div>
 
-        <!-- Card 4: Pendapatan Denda -->
-        <div class="bg-[#1e293b] rounded-2xl p-6 border border-emerald-500/20 shadow-xl relative overflow-hidden group hover:border-emerald-500/30 transition">
-            <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-            <div class="relative z-10">
-                <p class="text-slate-400 text-sm font-medium mb-1">Pendapatan Denda</p>
-                <h3 class="text-2xl font-bold text-emerald-400">Rp {{ number_format($pendapatanBulanIni, 0, ',', '.') }}</h3>
-                <p class="text-xs text-slate-500 mt-1">Piutang: Rp {{ number_format($dendaBelumLunas, 0, ',', '.') }}</p>
+        {{-- Card: Pendapatan Denda --}}
+        <div class="relative bg-[#1e293b] rounded-2xl p-5 border border-white/5 shadow-xl overflow-hidden group hover:border-emerald-500/30 hover:shadow-emerald-500/10 transition-all duration-300 cursor-default">
+            <div class="absolute -top-6 -right-6 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/20 transition-colors"></div>
+
+            <div class="relative z-10 flex items-start justify-between">
+                <div class="flex-1">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Pendapatan Denda</p>
+                    <div class="flex items-end gap-1 mb-1.5">
+                        <span class="text-lg font-extrabold text-white tracking-tight leading-none">Rp</span>
+                        <span class="text-2xl font-extrabold text-white tracking-tight leading-none">{{ number_format($pendapatanBulanIni, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-xs">
+                        <span class="text-slate-500">Piutang:</span>
+                        <span class="text-amber-400 font-semibold">Rp {{ number_format($dendaBelumLunas, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+                <div class="w-11 h-11 bg-emerald-500/15 border border-emerald-500/20 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                    <i class="fas fa-coins text-emerald-400 text-base"></i>
+                </div>
             </div>
-            <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 absolute bottom-4 right-4 group-hover:scale-110 transition">
-                <i class="fas fa-coins text-xl"></i>
+
+            <div class="relative z-10 mt-4 pt-3 border-t border-white/5 flex items-center gap-1.5">
+                @if($pendapatanBulanIni > 0)
+                    <i class="fas fa-arrow-trend-up text-emerald-400 text-xs"></i>
+                    <span class="text-xs text-emerald-400 font-medium">Ada pemasukan bulan ini</span>
+                @else
+                    <i class="fas fa-minus text-slate-600 text-xs"></i>
+                    <span class="text-xs text-slate-500">Belum ada denda bulan ini</span>
+                @endif
             </div>
         </div>
     </div>
 
-    <!-- 2. GRAFIK & AKSI CEPAT -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- Grafik Aktivitas (Lebar 2/3) -->
-        <div class="lg:col-span-2 bg-[#1e293b] rounded-2xl border border-slate-700/50 p-6 shadow-xl">
-            <div class="flex justify-between items-center mb-6">
+    {{-- ══════════════════════════════════════════════
+         ROW 2 — CHART + ALERTS + QUICK ACTIONS
+         ══════════════════════════════════════════════ --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {{-- Chart: Aktivitas 7 Hari Terakhir (2/3 lebar) --}}
+        <div class="lg:col-span-2 bg-[#1e293b] rounded-2xl border border-white/5 shadow-xl overflow-hidden">
+            <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
                 <div>
-                    <h3 class="text-lg font-bold text-white">Aktivitas 7 Hari Terakhir</h3>
-                    <p class="text-sm text-slate-400">Peminjaman vs Pengembalian</p>
+                    <h3 class="text-sm font-bold text-white tracking-tight">Aktivitas 7 Hari Terakhir</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Peminjaman vs Pengembalian</p>
+                </div>
+                <div class="flex items-center gap-4 text-xs text-slate-500">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-sm bg-indigo-500 flex-shrink-0"></span>Pinjam
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 flex-shrink-0"></span>Kembali
+                    </span>
                 </div>
             </div>
-            <div class="relative h-64 w-full">
-                <canvas id="activityChart"></canvas>
+            <div class="p-5">
+                <div class="relative h-56 sm:h-64">
+                    <canvas id="activityChart"></canvas>
+                </div>
             </div>
         </div>
 
-        <!-- Panel Kanan: Alert & Info -->
-        <div class="space-y-6">
-            <!-- Alert Jatuh Tempo Hari Ini -->
+        {{-- Right Panel: Alerts + Quick Actions --}}
+        <div class="flex flex-col gap-4">
+
+            {{-- Alert: Jatuh Tempo Hari Ini --}}
             @if($jatuhTempoHariIni > 0)
-            <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-start gap-4">
-                <div class="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-bell text-amber-500 text-lg"></i>
+            <div class="bg-amber-500/8 border border-amber-500/20 rounded-2xl p-4 flex items-start gap-3.5">
+                <div class="w-9 h-9 bg-amber-500/20 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <i class="fas fa-bell text-amber-400 text-sm"></i>
                 </div>
                 <div class="flex-1">
-                    <h4 class="font-bold text-amber-400 mb-1">Jatuh Tempo Hari Ini</h4>
-                    <p class="text-sm text-amber-200/70 mb-3">
-                        Terdapat <strong class="text-white">{{ $jatuhTempoHariIni }}</strong> buku yang harus dikembalikan hari ini.
+                    <h4 class="text-sm font-bold text-amber-300 mb-1">Jatuh Tempo Hari Ini</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        <strong class="text-white">{{ $jatuhTempoHariIni }}</strong> buku wajib dikembalikan hari ini.
                     </p>
-                    <a href="{{ route('petugas.pengembalian.index') }}" class="text-xs font-semibold text-amber-400 hover:text-amber-300 underline">
-                        Cek Daftar Pengembalian <i class="fas fa-arrow-right text-[10px]"></i>
+                    <a href="{{ route('petugas.pengembalian.index') }}"
+                       class="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-amber-400 hover:text-amber-300 transition">
+                        Cek Pengembalian <i class="fas fa-arrow-right text-[9px]"></i>
                     </a>
                 </div>
             </div>
             @endif
 
-            <!-- Alert Terlambat -->
+            {{-- Alert: Terlambat --}}
             @if($terlambat > 0)
-            <div class="bg-red-500/10 border border-red-500/20 rounded-2xl p-5 flex items-start gap-4">
-                <div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-exclamation-circle text-red-500 text-lg"></i>
+            <div class="bg-rose-500/8 border border-rose-500/20 rounded-2xl p-4 flex items-start gap-3.5">
+                <div class="w-9 h-9 bg-rose-500/20 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <i class="fas fa-circle-exclamation text-rose-400 text-sm"></i>
                 </div>
                 <div class="flex-1">
-                    <h4 class="font-bold text-red-400 mb-1">Keterlambatan</h4>
-                    <p class="text-sm text-red-200/70 mb-3">
-                        <strong class="text-white">{{ $terlambat }}</strong> anggota belum mengembalikan buku melewati batas waktu.
+                    <h4 class="text-sm font-bold text-rose-300 mb-1">Keterlambatan</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        <strong class="text-white">{{ $terlambat }}</strong> anggota melewati batas waktu pengembalian.
                     </p>
-                    <a href="{{ route('petugas.denda.index') }}" class="text-xs font-semibold text-red-400 hover:text-red-300 underline">
-                        Kelola Denda <i class="fas fa-arrow-right text-[10px]"></i>
+                    <a href="{{ route('petugas.denda.index') }}"
+                       class="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-rose-400 hover:text-rose-300 transition">
+                        Kelola Denda <i class="fas fa-arrow-right text-[9px]"></i>
                     </a>
                 </div>
             </div>
             @endif
 
-            <!-- Aksi Cepat -->
-            <div class="bg-[#1e293b] rounded-2xl border border-slate-700/50 p-6 shadow-xl">
-                <h3 class="text-lg font-bold text-white mb-4">Aksi Cepat</h3>
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="{{ route('petugas.peminjaman.create') }}" class="p-3 rounded-xl bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600 hover:border-indigo-500 transition text-center group">
-                        <i class="fas fa-plus text-indigo-400 group-hover:text-white text-xl mb-2 block"></i>
-                        <span class="text-xs font-semibold text-indigo-300 group-hover:text-white">Peminjaman</span>
+            {{-- No alerts --}}
+            @if($jatuhTempoHariIni === 0 && $terlambat === 0)
+            <div class="bg-emerald-500/8 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3.5">
+                <div class="w-9 h-9 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-circle-check text-emerald-400 text-sm"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-emerald-300">Semuanya Lancar!</h4>
+                    <p class="text-xs text-slate-500">Tidak ada keterlambatan hari ini.</p>
+                </div>
+            </div>
+            @endif
+
+            {{-- Aksi Cepat --}}
+            <div class="bg-[#1e293b] rounded-2xl border border-white/5 shadow-xl p-4 flex-1">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Aksi Cepat</h3>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <a href="{{ route('petugas.peminjaman.index', ['status' => 'menunggu_konfirmasi']) }}"
+                       class="group p-3.5 rounded-xl bg-indigo-600/10 border border-indigo-500/15 hover:bg-indigo-600 hover:border-indigo-500 transition-all duration-200 text-center">
+                        <div class="w-8 h-8 bg-indigo-500/20 group-hover:bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 transition-colors">
+                            <i class="fas fa-hourglass-half text-indigo-400 group-hover:text-white text-sm transition-colors"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-indigo-300 group-hover:text-white transition-colors">Konfirmasi Pinjam</span>
                     </a>
-                    <a href="{{ route('petugas.pengembalian.index') }}" class="p-3 rounded-xl bg-emerald-600/10 border border-emerald-500/20 hover:bg-emerald-600 hover:border-emerald-500 transition text-center group">
-                        <i class="fas fa-undo text-emerald-400 group-hover:text-white text-xl mb-2 block"></i>
-                        <span class="text-xs font-semibold text-emerald-300 group-hover:text-white">Pengembalian</span>
+
+                    <a href="{{ route('petugas.pengembalian.index') }}"
+                       class="group p-3.5 rounded-xl bg-emerald-600/10 border border-emerald-500/15 hover:bg-emerald-600 hover:border-emerald-500 transition-all duration-200 text-center">
+                        <div class="w-8 h-8 bg-emerald-500/20 group-hover:bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 transition-colors">
+                            <i class="fas fa-rotate-left text-emerald-400 group-hover:text-white text-sm transition-colors"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-emerald-300 group-hover:text-white transition-colors">Pengembalian</span>
                     </a>
-                    <a href="{{ route('petugas.buku.create') }}" class="p-3 rounded-xl bg-blue-600/10 border border-blue-500/20 hover:bg-blue-600 hover:border-blue-500 transition text-center group">
-                        <i class="fas fa-book text-blue-400 group-hover:text-white text-xl mb-2 block"></i>
-                        <span class="text-xs font-semibold text-blue-300 group-hover:text-white">Tambah Buku</span>
+
+                    <a href="{{ route('petugas.buku.create') }}"
+                       class="group p-3.5 rounded-xl bg-blue-600/10 border border-blue-500/15 hover:bg-blue-600 hover:border-blue-500 transition-all duration-200 text-center">
+                        <div class="w-8 h-8 bg-blue-500/20 group-hover:bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 transition-colors">
+                            <i class="fas fa-book text-blue-400 group-hover:text-white text-sm transition-colors"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-blue-300 group-hover:text-white transition-colors">Tambah Buku</span>
                     </a>
-                    <a href="{{ route('petugas.anggota.create') }}" class="p-3 rounded-xl bg-purple-600/10 border border-purple-500/20 hover:bg-purple-600 hover:border-purple-500 transition text-center group">
-                        <i class="fas fa-user-plus text-purple-400 group-hover:text-white text-xl mb-2 block"></i>
-                        <span class="text-xs font-semibold text-purple-300 group-hover:text-white">Anggota Baru</span>
+
+                    <a href="{{ route('petugas.anggota.index') }}"
+                       class="group p-3.5 rounded-xl bg-violet-600/10 border border-violet-500/15 hover:bg-violet-600 hover:border-violet-500 transition-all duration-200 text-center">
+                        <div class="w-8 h-8 bg-violet-500/20 group-hover:bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-2 transition-colors">
+                            <i class="fas fa-users text-violet-400 group-hover:text-white text-sm transition-colors"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-violet-300 group-hover:text-white transition-colors">Data Anggota</span>
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 3. TABEL TRANSAKSI TERBARU -->
-    <div class="bg-[#1e293b] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
-        <div class="p-6 border-b border-slate-700/50 flex justify-between items-center">
+    {{-- ══════════════════════════════════════════════
+         ROW 3 — TABEL TRANSAKSI TERBARU
+         ══════════════════════════════════════════════ --}}
+    <div class="bg-[#1e293b] rounded-2xl border border-white/5 shadow-xl overflow-hidden">
+
+        {{-- Header tabel --}}
+        <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-bold text-white">Transaksi Terbaru</h3>
-                <p class="text-sm text-slate-400">5 aktivitas terakhir di perpustakaan</p>
+                <h3 class="text-sm font-bold text-white tracking-tight">Transaksi Terbaru</h3>
+                <p class="text-xs text-slate-500 mt-0.5">5 aktivitas peminjaman terakhir</p>
             </div>
-            <a href="{{ route('petugas.peminjaman.index') }}" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium">Lihat Semua</a>
+            <a href="{{ route('petugas.peminjaman.index') }}"
+               class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition">
+                Lihat Semua <i class="fas fa-arrow-right text-[9px]"></i>
+            </a>
         </div>
-        
+
+        {{-- Table --}}
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full text-left">
                 <thead>
-                    <tr class="bg-slate-800/50 text-xs uppercase tracking-wider text-slate-400">
-                        <th class="px-6 py-4 font-semibold">Waktu</th>
-                        <th class="px-6 py-4 font-semibold">Anggota</th>
-                        <th class="px-6 py-4 font-semibold">Buku</th>
-                        <th class="px-6 py-4 font-semibold text-center">Status</th>
-                        <th class="px-6 py-4 font-semibold text-right">Tanggal Kembali</th>
+                    <tr class="bg-white/3 border-b border-white/5">
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em]">Waktu</th>
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em]">Anggota</th>
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em]">Buku</th>
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em] text-center">Status</th>
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em] text-right">Kembali</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-700/50 text-sm">
+                <tbody class="divide-y divide-white/3">
                     @forelse($transaksiTerbaru as $t)
-                    <tr class="hover:bg-slate-800/30 transition">
-                        <td class="px-6 py-4 text-slate-400 text-xs">
-                            {{ $t->created_at->diffForHumans() }}<br>
-                            <span class="text-[10px]">{{ $t->created_at->format('d M Y, H:i') }}</span>
+                    <tr class="table-row-hover transition-colors duration-150 group">
+                        {{-- Waktu --}}
+                        <td class="px-5 py-3.5">
+                            <div class="text-xs text-slate-400 font-medium">{{ $t->created_at->diffForHumans() }}</div>
+                            <div class="text-[10px] text-slate-600 mt-0.5 tabular-nums">{{ $t->created_at->format('d M Y') }}</div>
                         </td>
-                        <td class="px-6 py-4 font-medium text-white">
-                            {{ $t->anggota->nama ?? 'N/A' }}
-                            <div class="text-xs text-slate-500">{{ $t->anggota->kelas ?? '-' }}</div>
+
+                        {{-- Anggota --}}
+                        <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-2.5">
+                                {{-- Avatar --}}
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow-md">
+                                    {{ strtoupper(substr($t->anggota->nama ?? 'NA', 0, 2)) }}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors leading-tight">
+                                        {{ $t->anggota->nama ?? 'N/A' }}
+                                    </div>
+                                    <div class="text-[10px] text-slate-600 mt-0.5">{{ $t->anggota->kelas ?? '—' }}</div>
+                                </div>
+                            </div>
                         </td>
-                        <td class="px-6 py-4 text-slate-300">
-                            {{ $t->buku->judul ?? 'N/A' }}
+
+                        {{-- Buku --}}
+                        <td class="px-5 py-3.5 max-w-[200px]">
+                            <div class="text-sm text-slate-300 truncate">{{ $t->buku->judul ?? 'N/A' }}</div>
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            @if($t->status_peminjaman == 'dipinjam')
-                                <span class="px-2 py-1 rounded text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20">Dipinjam</span>
-                            @elseif($t->status_peminjaman == 'dikembalikan')
-                                <span class="px-2 py-1 rounded text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Kembali</span>
+
+                        {{-- Status Badge --}}
+                        <td class="px-5 py-3.5 text-center">
+                            @if($t->status_peminjaman === 'dipinjam')
+                                <span class="badge-warning inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-circle text-[5px]"></i> Dipinjam
+                                </span>
+                            @elseif($t->status_peminjaman === 'dikembalikan')
+                                <span class="badge-success inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-circle text-[5px]"></i> Kembali
+                                </span>
+                            @elseif($t->status_peminjaman === 'menunggu_konfirmasi')
+                                <span class="badge-info inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-circle text-[5px]"></i> Menunggu
+                                </span>
                             @else
-                                <span class="px-2 py-1 rounded text-xs bg-red-500/10 text-red-400 border border-red-500/20">{{ ucfirst($t->status_peminjaman) }}</span>
+                                <span class="badge-error inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-circle text-[5px]"></i> {{ ucfirst($t->status_peminjaman) }}
+                                </span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-right text-slate-400 text-xs">
-                            {{ $t->tanggal_kembali_rencana->format('d M Y') }}
+
+                        {{-- Tanggal Kembali --}}
+                        <td class="px-5 py-3.5 text-right">
+                            <div class="text-xs text-slate-400 tabular-nums">
+                                {{ $t->tanggal_kembali_rencana->format('d M Y') }}
+                            </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-slate-500">Belum ada transaksi.</td>
+                        <td colspan="5" class="px-5 py-14 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="w-14 h-14 bg-white/3 rounded-2xl flex items-center justify-center mb-4">
+                                    <i class="fas fa-inbox text-slate-600 text-2xl"></i>
+                                </div>
+                                <p class="text-sm font-medium text-slate-500">Belum ada transaksi.</p>
+                                <a href="{{ route('petugas.peminjaman.index', ['status' => 'menunggu_konfirmasi']) }}"
+                                   class="mt-2 text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition">
+                                    Cek pengajuan anggota →
+                                </a>
+                            </div>
+                        </td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -198,54 +383,92 @@
     </div>
 
 </div>
+@endsection
 
-<!-- Script Chart.js -->
+@push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx = document.getElementById('activityChart').getContext('2d');
-    
-    // Data dari Controller
-    const labels = @json($grafikLabel);
-    const dataPinjam = @json($grafikDataPinjam);
-    const dataKembali = @json($grafikDataKembali);
+    // ── Chart.js: Activity Chart ──
+    (function() {
+        const ctx = document.getElementById('activityChart');
+        if (!ctx) return;
 
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Peminjaman',
-                    data: dataPinjam,
-                    backgroundColor: '#6366f1', // Indigo
-                    borderRadius: 4,
-                },
-                {
-                    label: 'Pengembalian',
-                    data: dataKembali,
-                    backgroundColor: '#10b981', // Emerald
-                    borderRadius: 4,
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'top', labels: { color: '#94a3b8' } }
+        const labels    = @json($grafikLabel);
+        const pinjamData  = @json($grafikDataPinjam);
+        const kembaliData = @json($grafikDataKembali);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Peminjaman',
+                        data: pinjamData,
+                        backgroundColor: 'rgba(99,102,241,0.8)',
+                        hoverBackgroundColor: 'rgba(99,102,241,1)',
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7,
+                    },
+                    {
+                        label: 'Pengembalian',
+                        data: kembaliData,
+                        backgroundColor: 'rgba(16,185,129,0.8)',
+                        hoverBackgroundColor: 'rgba(16,185,129,1)',
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7,
+                    }
+                ]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: '#334155' },
-                    ticks: { color: '#94a3b8' }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        borderColor: 'rgba(255,255,255,0.08)',
+                        borderWidth: 1,
+                        titleColor: '#f1f5f9',
+                        bodyColor:  '#94a3b8',
+                        padding: 12,
+                        titleFont: { size: 12, weight: 'bold' },
+                        bodyFont:  { size: 12 },
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y} transaksi`,
+                        },
+                        cornerRadius: 10,
+                        caretSize: 5,
+                    }
                 },
-                x: {
-                    grid: { display: false },
-                    ticks: { color: '#94a3b8' }
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: { color: '#64748b', font: { size: 11 } },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255,255,255,0.04)',
+                            drawBorder: false,
+                        },
+                        border: { display: false, dash: [4, 4] },
+                        ticks: {
+                            color: '#64748b',
+                            font: { size: 11 },
+                            stepSize: 1,
+                            precision: 0
+                        },
+                    }
                 }
             }
-        }
-    });
+        });
+    })();
 </script>
-@endsection
+@endpush

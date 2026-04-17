@@ -26,6 +26,13 @@
                 <input type="text" name="penerbit" value="{{ old('penerbit') }}" required class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none">
             </div>
 
+            <!-- ISBN -->
+            <div class="md:col-span-2">
+                <label class="block text-sm text-slate-300 mb-2">ISBN</label>
+                <input type="text" name="isbn" value="{{ old('isbn') }}" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none" placeholder="Contoh: 978-623-123-456-7">
+                @error('isbn') <span class="text-red-400 text-xs">{{ $message }}</span> @enderror
+            </div>
+
             <!-- Tahun & Stok -->
             <div>
                 <label class="block text-sm text-slate-300 mb-2">Tahun Terbit *</label>
@@ -34,6 +41,13 @@
             <div>
                 <label class="block text-sm text-slate-300 mb-2">Stok Awal *</label>
                 <input type="number" name="stok" value="{{ old('stok', 1) }}" required class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm text-slate-300 mb-2">Harga Buku / Ganti *</label>
+                <input type="number" name="harga_ganti" value="{{ old('harga_ganti', 50000) }}" min="0" step="1000" required class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none">
+            </div>
+            <div class="flex items-end">
+                <p class="text-xs text-slate-500">Nilai ini dipakai sebagai denda pengganti otomatis jika buku hilang.</p>
             </div>
 
             <!-- Kategori (PENTING: name=id_kategori) -->

@@ -4,7 +4,7 @@
 @section('page-title', 'Manajemen Denda')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-6" x-data="{}">
 
     <!-- 1. STATISTIK KEUANGAN DENDA (DINAMIS) -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -54,8 +54,8 @@
         <!-- Header Tabel & Filter -->
         <div class="p-6 border-b border-slate-700/50 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
-                <h3 class="text-lg font-bold text-white">Daftar Denda Keterlambatan</h3>
-                <p class="text-sm text-slate-400">Kelola pembayaran denda anggota</p>
+                <h3 class="text-lg font-bold text-white">Daftar Denda & Penggantian</h3>
+                <p class="text-sm text-slate-400">Kelola pembayaran keterlambatan, buku rusak, dan buku hilang</p>
             </div>
             
             <!-- Form Filter -->
@@ -68,6 +68,13 @@
                 <button type="submit" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl shadow-lg transition whitespace-nowrap">
                     Cari
                 </button>
+                <select name="jenis" class="px-4 py-2.5 bg-slate-800/50 border border-slate-600 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
+                    <option value="">Semua Jenis</option>
+                    <option value="keterlambatan" {{ request('jenis') === 'keterlambatan' ? 'selected' : '' }}>Keterlambatan</option>
+                    <option value="kerusakan" {{ request('jenis') === 'kerusakan' ? 'selected' : '' }}>Kerusakan</option>
+                    <option value="kehilangan" {{ request('jenis') === 'kehilangan' ? 'selected' : '' }}>Kehilangan</option>
+                    <option value="gabungan" {{ request('jenis') === 'gabungan' ? 'selected' : '' }}>Gabungan</option>
+                </select>
                 <a href="{{ route('petugas.denda.index') }}" class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold rounded-xl border border-slate-600 transition whitespace-nowrap">
                     Reset
                 </a>
@@ -82,7 +89,7 @@
                         <th class="px-6 py-4 font-semibold">ID Denda</th>
                         <th class="px-6 py-4 font-semibold">Anggota</th>
                         <th class="px-6 py-4 font-semibold">Buku</th>
-                        <th class="px-6 py-4 font-semibold text-center">Telat</th>
+                        <th class="px-6 py-4 font-semibold text-center">Jenis</th>
                         <th class="px-6 py-4 font-semibold text-right">Jumlah Denda</th>
                         <th class="px-6 py-4 font-semibold text-center">Status</th>
                         <th class="px-6 py-4 font-semibold text-center">Aksi</th>
@@ -123,11 +130,18 @@
                             @endif
                         </td>
 
-                        <!-- Hari Terlambat -->
+                        <!-- Jenis -->
                         <td class="px-6 py-4 text-center">
-                            <span class="inline-block px-2 py-1 rounded bg-red-500/10 text-red-400 text-xs font-bold border border-red-500/20">
-                                {{ $denda->hari_terlambat }} Hari
+                            <span class="inline-block px-2 py-1 rounded text-xs font-bold border
+                                {{ $denda->jenis_denda === 'kehilangan' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : '' }}
+                                {{ $denda->jenis_denda === 'kerusakan' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : '' }}
+                                {{ $denda->jenis_denda === 'gabungan' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : '' }}
+                                {{ $denda->jenis_denda === 'keterlambatan' ? 'bg-red-500/10 text-red-400 border-red-500/20' : '' }}">
+                                {{ $denda->label_jenis_denda }}
                             </span>
+                            @if($denda->hari_terlambat > 0)
+                                <div class="text-[10px] text-slate-500 mt-1">{{ $denda->hari_terlambat }} hari telat</div>
+                            @endif
                         </td>
                         
                         <!-- Jumlah Denda -->
@@ -158,10 +172,12 @@
                                     Bayar
                                 </button>
                             @else
-                                <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">
-                                    <i class="fas fa-check-circle"></i>
-                                    Selesai
-                                </span>
+                                <a href="{{ route('denda.receipt', $denda->id_denda) }}"
+                                   target="_blank"
+                                   class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold rounded-lg border border-slate-600 transition flex items-center gap-2 mx-auto w-fit">
+                                    <i class="fas fa-print"></i>
+                                    Cetak Struk
+                                </a>
                             @endif
                         </td>
                     </tr>
@@ -285,7 +301,8 @@
                 <button type="button" onclick="closeModal()" class="flex-1 px-4 py-3 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800 transition font-medium">
                     Batal
                 </button>
-                <button type="submit" class="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition flex items-center justify-center gap-2">
+                <button type="submit" 
+                        class="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition flex items-center justify-center gap-2">
                     <i class="fas fa-check-circle"></i> Konfirmasi Bayar
                 </button>
             </div>

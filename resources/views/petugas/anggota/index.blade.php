@@ -1,209 +1,228 @@
 @extends('layouts.petugas')
 
-@section('title', 'Data Anggota')
+@section('title', 'Data Anggota — Perpustakaan Digital')
 @section('page-title', 'Data Anggota')
+@section('page-subtitle', 'Kelola data anggota perpustakaan')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-5 animate-fade-in-down"
+     x-data="anggotaPage()"
+     x-init="init()">
 
-    <!-- 1. NOTIFIKASI SUKSES/ERROR -->
-    @if(session('success'))
-        <div class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-6 py-4 rounded-xl flex items-center gap-3 shadow-lg animate-fade-in-down">
-            <i class="fas fa-check-circle text-xl"></i>
-            <span class="font-medium">{{ session('success') }}</span>
-            <button onclick="this.parentElement.remove()" class="ml-auto hover:text-white transition"><i class="fas fa-times"></i></button>
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div class="bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-4 rounded-xl flex items-start gap-3">
-            <i class="fas fa-exclamation-circle text-xl mt-0.5"></i>
-            <div>
-                <h4 class="font-bold mb-1">Terjadi Kesalahan</h4>
-                <ul class="list-disc list-inside text-sm">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-            <button onclick="this.parentElement.remove()" class="ml-auto hover:text-white transition"><i class="fas fa-times"></i></button>
-        </div>
-    @endif
-
-    <!-- 2. STATISTIK RINGKAS -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Card Total -->
-        <div class="bg-[#1e293b] rounded-2xl p-6 border border-slate-700/50 shadow-xl flex items-center justify-between group hover:border-indigo-500/30 transition">
-            <div>
-                <p class="text-slate-400 text-sm font-medium mb-1">Total Anggota</p>
-                <h3 class="text-3xl font-bold text-white">{{ number_format($totalAnggota ?? 0) }}</h3>
-            </div>
-            <div class="w-14 h-14 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 group-hover:scale-110 transition">
-                <i class="fas fa-users text-2xl"></i>
+    {{-- ══════════════════════════════════════════════
+         STATISTIK RINGKAS
+         ══════════════════════════════════════════════ --}}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {{-- Total --}}
+        <div class="relative bg-[#1e293b] rounded-2xl p-5 border border-white/5 shadow-xl overflow-hidden group hover:border-indigo-500/25 transition-all duration-300">
+            <div class="absolute -top-5 -right-5 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="relative flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Total Anggota</p>
+                    <span class="text-3xl font-extrabold text-white tracking-tight">{{ number_format($totalAnggota ?? 0) }}</span>
+                </div>
+                <div class="w-11 h-11 bg-indigo-500/15 border border-indigo-500/20 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fas fa-users text-indigo-400"></i>
+                </div>
             </div>
         </div>
 
-        <!-- Card Aktif -->
-        <div class="bg-[#1e293b] rounded-2xl p-6 border border-slate-700/50 shadow-xl flex items-center justify-between group hover:border-emerald-500/30 transition">
-            <div>
-                <p class="text-slate-400 text-sm font-medium mb-1">Anggota Aktif</p>
-                <h3 class="text-3xl font-bold text-emerald-400">{{ number_format($anggotaAktif ?? 0) }}</h3>
-            </div>
-            <div class="w-14 h-14 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 group-hover:scale-110 transition">
-                <i class="fas fa-user-check text-2xl"></i>
+        {{-- Aktif --}}
+        <div class="relative bg-[#1e293b] rounded-2xl p-5 border border-white/5 shadow-xl overflow-hidden group hover:border-emerald-500/25 transition-all duration-300">
+            <div class="absolute -top-5 -right-5 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="relative flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Anggota Aktif</p>
+                    <span class="text-3xl font-extrabold text-emerald-400 tracking-tight">{{ number_format($anggotaAktif ?? 0) }}</span>
+                </div>
+                <div class="w-11 h-11 bg-emerald-500/15 border border-emerald-500/20 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fas fa-user-check text-emerald-400"></i>
+                </div>
             </div>
         </div>
 
-        <!-- Card Non-Aktif -->
-        <div class="bg-[#1e293b] rounded-2xl p-6 border border-slate-700/50 shadow-xl flex items-center justify-between group hover:border-red-500/30 transition">
-            <div>
-                <p class="text-slate-400 text-sm font-medium mb-1">Non-Aktif</p>
-                <h3 class="text-3xl font-bold text-red-400">{{ number_format($anggotaNonAktif ?? 0) }}</h3>
-            </div>
-            <div class="w-14 h-14 bg-red-500/20 rounded-xl flex items-center justify-center text-red-400 group-hover:scale-110 transition">
-                <i class="fas fa-user-slash text-2xl"></i>
+        {{-- Non-Aktif --}}
+        <div class="relative bg-[#1e293b] rounded-2xl p-5 border border-white/5 shadow-xl overflow-hidden group hover:border-rose-500/25 transition-all duration-300">
+            <div class="absolute -top-5 -right-5 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="relative flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Non-Aktif</p>
+                    <span class="text-3xl font-extrabold text-rose-400 tracking-tight">{{ number_format($anggotaNonAktif ?? 0) }}</span>
+                </div>
+                <div class="w-11 h-11 bg-rose-500/15 border border-rose-500/20 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fas fa-user-slash text-rose-400"></i>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 3. TABEL DATA ANGGOTA -->
-    <div class="bg-[#1e293b] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
-        
-        <!-- Header: Judul & Tombol Tambah -->
-        <div class="p-6 border-b border-slate-700/50 flex flex-col lg:flex-row justify-between items-center gap-4">
-            <div class="text-center lg:text-left">
-                <h3 class="text-lg font-bold text-white">Daftar Anggota Perpustakaan</h3>
-                <p class="text-sm text-slate-400">Kelola data siswa/mahasiswa dan akun login mereka</p>
+    {{-- ══════════════════════════════════════════════
+         TABEL DATA ANGGOTA
+         ══════════════════════════════════════════════ --}}
+    <div class="bg-[#1e293b] rounded-2xl border border-white/5 shadow-xl overflow-hidden">
+
+        {{-- Header --}}
+        <div class="px-5 py-4 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+                <h3 class="text-sm font-bold text-white tracking-tight">Daftar Anggota Perpustakaan</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Akun anggota dibuat melalui halaman register, petugas cukup mengelola data yang sudah terdaftar</p>
             </div>
-            
-            <a href="{{ route('petugas.anggota.create') }}" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-500/30 transition flex items-center gap-2 whitespace-nowrap">
-                <i class="fas fa-plus"></i>
-                <span>Tambah Anggota Baru</span>
-            </a>
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/8 text-slate-400 text-xs font-semibold rounded-xl whitespace-nowrap">
+                <i class="fas fa-circle-info text-[11px]"></i>
+                Pendaftaran via register
+            </span>
         </div>
 
-        <!-- Filter & Search Bar -->
-        <div class="p-6 bg-slate-800/30 border-b border-slate-700/50">
-            <form action="{{ route('petugas.anggota.index') }}" method="GET" class="flex flex-col md:flex-row gap-4">
-                <!-- Search Input -->
+        {{-- Filter & Search --}}
+        <div class="px-5 py-3.5 bg-white/2 border-b border-white/5">
+            <form action="{{ route('petugas.anggota.index') }}" method="GET"
+                  class="flex flex-col md:flex-row gap-3">
                 <div class="relative flex-1">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama, NIS, atau Email..." 
-                           class="w-full pl-10 pr-4 py-2.5 bg-slate-800 border border-slate-600 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
-                    <i class="fas fa-search absolute left-3.5 top-3 text-slate-500 text-sm"></i>
+                    <i class="fas fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                    <input type="text" name="search" value="{{ request('search') }}"
+                           placeholder="Cari nama, NIS, atau email..."
+                           class="w-full pl-9 pr-4 py-2 bg-slate-900/60 border border-white/8 rounded-xl text-sm text-white placeholder-slate-500
+                                  focus:outline-none focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20 transition">
                 </div>
-                
-                <!-- Filter Status -->
-                <select name="status" class="w-full md:w-48 px-4 py-2.5 bg-slate-800 border border-slate-600 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 cursor-pointer">
+                <select name="status"
+                        class="w-full md:w-40 px-3 py-2 bg-slate-900/60 border border-white/8 rounded-xl text-sm text-slate-300
+                               focus:outline-none focus:border-indigo-500/60 cursor-pointer transition">
                     <option value="">Semua Status</option>
-                    <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                    <option value="non-aktif" {{ request('status') == 'non-aktif' ? 'selected' : '' }}>Non-Aktif</option>
+                    <option value="aktif"     {{ request('status') === 'aktif'     ? 'selected' : '' }}>Aktif</option>
+                    <option value="non-aktif" {{ request('status') === 'non-aktif' ? 'selected' : '' }}>Non-Aktif</option>
                 </select>
-
-                <!-- Filter Kelas (Opsional) -->
-                <input type="text" name="kelas" value="{{ request('kelas') }}" placeholder="Filter Kelas (mis: XII IPA)" 
-                       class="w-full md:w-48 px-4 py-2.5 bg-slate-800 border border-slate-600 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
-
-                <!-- Buttons -->
+                <input type="text" name="kelas" value="{{ request('kelas') }}"
+                       placeholder="Filter kelas..."
+                       class="w-full md:w-36 px-3 py-2 bg-slate-900/60 border border-white/8 rounded-xl text-sm text-white placeholder-slate-500
+                              focus:outline-none focus:border-indigo-500/60 transition">
                 <div class="flex gap-2">
-                    <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-indigo-500/30 transition whitespace-nowrap">
-                        Filter
+                    <button type="submit"
+                            class="flex-1 md:flex-none px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-500/25 transition whitespace-nowrap">
+                        <i class="fas fa-filter mr-1.5"></i> Filter
                     </button>
-                    <a href="{{ route('petugas.anggota.index') }}" class="px-6 py-2.5 bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold rounded-xl border border-slate-600 transition whitespace-nowrap">
-                        Reset
+                    <a href="{{ route('petugas.anggota.index') }}"
+                       class="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/8 text-slate-400 hover:text-white text-xs font-semibold rounded-xl transition"
+                       title="Reset filter">
+                        <i class="fas fa-rotate"></i>
                     </a>
                 </div>
             </form>
         </div>
 
-        <!-- Table Content -->
+        {{-- Table --}}
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full text-left">
                 <thead>
-                    <tr class="bg-slate-800/50 text-xs uppercase tracking-wider text-slate-400">
-                        <th class="px-6 py-4 font-semibold w-16">No</th>
-                        <th class="px-6 py-4 font-semibold">Anggota (Nama & NIS)</th>
-                        <th class="px-6 py-4 font-semibold">Kelas</th>
-                        <th class="px-6 py-4 font-semibold">Email / Username</th>
-                        <th class="px-6 py-4 font-semibold text-center">Tanggal Bergabung</th>
-                        <th class="px-6 py-4 font-semibold text-center">Status</th>
-                        <th class="px-6 py-4 font-semibold text-center">Aksi</th>
+                    <tr class="bg-white/3 border-b border-white/5">
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em] w-12">#</th>
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em]">Anggota</th>
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em]">Kelas</th>
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em]">Email / Username</th>
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em] text-center">Bergabung</th>
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em] text-center">Status</th>
+                        <th class="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.12em] text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-700/50 text-sm">
+                <tbody class="divide-y divide-white/3">
                     @forelse($anggotas as $index => $anggota)
-                    <tr class="hover:bg-slate-800/30 transition group">
-                        <!-- Nomor Urut -->
-                        <td class="px-6 py-4 text-slate-400 font-medium">
+                    <tr class="table-row-hover transition-colors duration-150 group">
+                        {{-- No --}}
+                        <td class="px-5 py-3.5 text-xs text-slate-600 font-medium tabular-nums">
                             {{ $anggotas->firstItem() + $index }}
                         </td>
-                        
-                        <!-- Nama & NIS -->
-                        <td class="px-6 py-4">
+
+                        {{-- Nama & NIS --}}
+                        <td class="px-5 py-3.5">
                             <div class="flex items-center gap-3">
-                                <!-- Avatar Inisial -->
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg flex-shrink-0">
-                                    {{ substr($anggota->nama, 0, 2) }}
+                                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-xs shadow-md flex-shrink-0">
+                                    {{ strtoupper(substr($anggota->nama, 0, 2)) }}
                                 </div>
                                 <div>
-                                    <div class="font-bold text-white group-hover:text-indigo-300 transition">{{ $anggota->nama }}</div>
-                                    <div class="text-xs text-slate-500 font-mono mt-0.5">NIS: {{ $anggota->nis_nisn }}</div>
+                                    <div class="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors leading-tight">
+                                        {{ $anggota->nama }}
+                                    </div>
+                                    <div class="text-[10px] text-slate-600 font-mono mt-0.5">NIS: {{ $anggota->nis_nisn }}</div>
                                 </div>
                             </div>
                         </td>
 
-                        <!-- Kelas -->
-                        <td class="px-6 py-4 text-slate-300">
-                            <span class="px-2 py-1 rounded bg-slate-700 text-xs font-medium">{{ $anggota->kelas }}</span>
+                        {{-- Kelas --}}
+                        <td class="px-5 py-3.5">
+                            <span class="px-2 py-1 bg-slate-700/60 border border-white/5 text-xs font-medium text-slate-300 rounded-lg">
+                                {{ $anggota->kelas }}
+                            </span>
                         </td>
 
-                        <!-- Email & Username -->
-                        <td class="px-6 py-4">
-                            <div class="text-xs text-slate-300">{{ $anggota->email }}</div>
-                            <div class="text-[10px] text-slate-500 mt-0.5">User: {{ $anggota->user->username ?? '-' }}</div>
+                        {{-- Email --}}
+                        <td class="px-5 py-3.5">
+                            <div class="text-xs text-slate-400">{{ $anggota->email }}</div>
                         </td>
 
-                        <!-- Tanggal Bergabung -->
-                        <td class="px-6 py-4 text-center text-slate-400 text-xs">
-                            {{ $anggota->tanggal_bergabung->format('d M Y') }}
+                        {{-- Bergabung --}}
+                        <td class="px-5 py-3.5 text-center">
+                            <div class="text-xs text-slate-500 tabular-nums">{{ $anggota->tanggal_bergabung->format('d M Y') }}</div>
                         </td>
-                        
-                        <!-- Status Badge -->
-                        <td class="px-6 py-4 text-center">
+
+                        {{-- Status Badge --}}
+                        <td class="px-5 py-3.5 text-center">
                             @if($anggota->status === 'aktif')
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                    <i class="fas fa-circle text-[6px] mr-1.5"></i> Aktif
+                                <span class="badge-success inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold">
+                                    <i class="fas fa-circle text-[4px]"></i> Aktif
                                 </span>
                             @else
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
-                                    <i class="fas fa-circle text-[6px] mr-1.5"></i> Non-Aktif
+                                <span class="badge-error inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold">
+                                    <i class="fas fa-circle text-[4px]"></i> Non-Aktif
                                 </span>
                             @endif
                         </td>
 
-                        <!-- Aksi -->
-                        <td class="px-6 py-4 text-center">
-                            <div class="flex items-center justify-center gap-2">
-                                <a href="{{ route('petugas.anggota.edit', $anggota->id) }}" class="w-8 h-8 rounded-lg bg-indigo-500/10 hover:bg-indigo-500 text-indigo-400 hover:text-white flex items-center justify-center transition" title="Edit">
+                        {{-- Aksi --}}
+                        <td class="px-5 py-3.5 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                {{-- Lihat Detail --}}
+                                <a href="{{ route('petugas.anggota.show', $anggota->id) }}"
+                                   class="group/btn w-8 h-8 rounded-lg bg-white/5 hover:bg-slate-600 border border-white/8 hover:border-slate-500 text-slate-500 hover:text-white flex items-center justify-center transition-all duration-150"
+                                   title="Lihat Detail">
+                                    <i class="fas fa-eye text-xs"></i>
+                                </a>
+
+                                {{-- Edit --}}
+                                <a href="{{ route('petugas.anggota.edit', $anggota->id) }}"
+                                   class="group/btn w-8 h-8 rounded-lg bg-indigo-500/10 hover:bg-indigo-500 border border-indigo-500/20 hover:border-indigo-400 text-indigo-400 hover:text-white flex items-center justify-center transition-all duration-150"
+                                   title="Edit Anggota">
                                     <i class="fas fa-pen text-xs"></i>
                                 </a>
-                                
-                                <form action="{{ route('petugas.anggota.destroy', $anggota->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus anggota \'{{ $anggota->nama }}\'? Akun login mereka juga akan dihapus permanen!');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="w-8 h-8 rounded-lg bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white flex items-center justify-center transition" title="Hapus">
-                                        <i class="fas fa-trash text-xs"></i>
-                                    </button>
-                                </form>
+
+                                {{-- Hapus (trigger modal) --}}
+                                <button
+                                    type="button"
+                                    @click="window.dispatchEvent(new CustomEvent('confirm', { 
+                                        detail: {
+                                            title: 'Hapus Anggota?',
+                                            message: 'Anggota <strong>{{ addslashes($anggota->nama) }}</strong> akan dihapus permanen beserta akun loginnya.',
+                                            action: '{{ route('petugas.anggota.destroy', $anggota->id) }}',
+                                            method: 'DELETE',
+                                            type: 'danger',
+                                            confirmText: 'Ya, Hapus',
+                                            usePin: false
+                                        }
+                                    }))"
+                                    class="group/btn w-8 h-8 rounded-lg bg-rose-500/10 hover:bg-rose-500 border border-rose-500/20 hover:border-rose-400 text-rose-400 hover:text-white flex items-center justify-center transition-all duration-150"
+                                    title="Hapus Anggota">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center justify-center text-slate-500">
-                                <i class="fas fa-users-slash text-5xl mb-4 opacity-30"></i>
-                                <p class="text-lg font-medium">Tidak ada data anggota ditemukan.</p>
-                                <p class="text-sm">Coba ubah kata kunci pencarian atau filter status.</p>
+                        <td colspan="7" class="px-5 py-14 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="w-14 h-14 bg-white/3 rounded-2xl flex items-center justify-center mb-4">
+                                    <i class="fas fa-users-slash text-slate-600 text-2xl"></i>
+                                </div>
+                                <p class="text-sm font-medium text-slate-400">Tidak ada data anggota.</p>
+                                <p class="text-xs text-slate-600 mt-1">Coba ubah kata kunci atau filter.</p>
                             </div>
                         </td>
                     </tr>
@@ -212,41 +231,32 @@
             </table>
         </div>
 
-        <!-- Pagination -->
+        {{-- Pagination --}}
         @if($anggotas->hasPages())
-        <div class="p-6 border-t border-slate-700/50 flex items-center justify-between">
-            <span class="text-sm text-slate-400">
-                Menampilkan <strong class="text-white">{{ $anggotas->firstItem() }}</strong>-<strong class="text-white">{{ $anggotas->lastItem() }}</strong> dari <strong class="text-white">{{ $anggotas->total() }}</strong> anggota
+        <div class="px-5 py-4 border-t border-white/5 flex items-center justify-between">
+            <span class="text-xs text-slate-500">
+                Menampilkan <strong class="text-slate-300">{{ $anggotas->firstItem() }}</strong>–<strong class="text-slate-300">{{ $anggotas->lastItem() }}</strong>
+                dari <strong class="text-slate-300">{{ $anggotas->total() }}</strong> anggota
             </span>
-            
-            <div class="flex gap-2">
-                {{-- Previous --}}
-                @if ($anggotas->onFirstPage())
-                    <span class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800/50 text-slate-600 border border-slate-700 cursor-not-allowed">
+            <div class="flex gap-1.5" x-data="{}">
+                @if($anggotas->onFirstPage())
+                    <span class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/3 text-slate-700 border border-white/5 cursor-not-allowed">
                         <i class="fas fa-chevron-left text-xs"></i>
                     </span>
                 @else
-                    <a href="{{ $anggotas->previousPageUrl() }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition border border-slate-700">
+                    <a href="{{ $anggotas->previousPageUrl() }}"
+                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/8 transition">
                         <i class="fas fa-chevron-left text-xs"></i>
                     </a>
                 @endif
 
-                {{-- Numbers --}}
-                @foreach ($anggotas->links()->elements[0] ?? [] as $page => $url)
-                    @if ($page == $anggotas->currentPage())
-                        <span class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-500/30 border border-indigo-500">{{ $page }}</span>
-                    @else
-                        <a href="{{ $url }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition border border-slate-700">{{ $page }}</a>
-                    @endif
-                @endforeach
-
-                {{-- Next --}}
-                @if ($anggotas->hasMorePages())
-                    <a href="{{ $anggotas->nextPageUrl() }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition border border-slate-700">
+                @if($anggotas->hasMorePages())
+                    <a href="{{ $anggotas->nextPageUrl() }}"
+                       class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/8 transition">
                         <i class="fas fa-chevron-right text-xs"></i>
                     </a>
                 @else
-                    <span class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800/50 text-slate-600 border border-slate-700 cursor-not-allowed">
+                    <span class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/3 text-slate-700 border border-white/5 cursor-not-allowed">
                         <i class="fas fa-chevron-right text-xs"></i>
                     </span>
                 @endif
@@ -254,5 +264,16 @@
         </div>
         @endif
     </div>
+
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function anggotaPage() {
+        return {
+            init() {}
+        };
+    }
+</script>
+@endpush

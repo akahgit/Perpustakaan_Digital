@@ -28,12 +28,23 @@ class AuthController extends Controller
 
             $user = Auth::user();
 
+            // Cek status akun — non-aktif tidak diizinkan login
+            if ($user->status === 'non-aktif') {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()->withErrors([
+                    'email' => 'Akun Anda telah dinonaktifkan. Hubungi administrator untuk informasi lebih lanjut.',
+                ])->onlyInput('email');
+            }
+
             if ($user->role === 'kepala') {
-                return redirect()->intended(route('kepala.dashboard'));
+                return redirect()->intended(route('kepala.dashboard'))->with('success', 'Halo, ' . $user->name . '. Selamat bertugas!');
             } elseif ($user->role === 'petugas') {
-                return redirect()->intended(route('petugas.dashboard'));
+                return redirect()->intended(route('petugas.dashboard'))->with('success', 'Halo, ' . $user->name . '. Selamat bertugas!');
             } else {
-                return redirect()->intended(route('home'));
+                return redirect()->intended(route('home'))->with('success', 'Selamat datang kembali, ' . $user->name . '!');
             }
         }
 
@@ -66,6 +77,7 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => 'anggota',
+            'status' => 'aktif',
         ]);
 
         Anggota::create([

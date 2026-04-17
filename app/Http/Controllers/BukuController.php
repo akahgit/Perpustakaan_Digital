@@ -6,7 +6,6 @@ use App\Models\Buku;
 use App\Models\KategoriBuku;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class BukuController extends Controller
 {
@@ -16,14 +15,21 @@ class BukuController extends Controller
             public function index(Request $request)
     {
         $totalEksemplar = \App\Models\Buku::sum('stok') ?? 0;
+        $totalTercatat = \App\Models\Buku::query()
+            ->selectRaw('COALESCE(SUM(stok + stok_hilang), 0) as total')
+            ->value('total') ?? 0;
 
         $judulBerbeda = \App\Models\Buku::count() ?? 0;
 
         $tersedia = \App\Models\Buku::sum('stok_tersedia') ?? 0;
+        $stokRusak = \App\Models\Buku::sum('stok_rusak') ?? 0;
+        $stokHilang = \App\Models\Buku::sum('stok_hilang') ?? 0;
 
-        $sedangDipinjam = max(0, $totalEksemplar - $tersedia);
+        $sedangDipinjam = \App\Models\Peminjaman::aktif()->count();
 
-        $query = \App\Models\Buku::with('kategori');
+        $query = \App\Models\Buku::with('kategori')->withCount(['peminjamans as peminjaman_aktif_count' => function ($q) {
+            $q->aktif();
+        }]);
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
@@ -47,9 +53,12 @@ class BukuController extends Controller
         return view('petugas.buku.index', compact(
             'bukus', 
             'kategoris', 
-            'totalEksemplar', // Total Fisik
+            'totalEksemplar', // Total fisik saat ini (tidak termasuk yang hilang)
+            'totalTercatat',  // Total koleksi tercatat termasuk yang hilang
             'tersedia',       // Siap Pinjam
             'sedangDipinjam', // Dalam Peredaran
+            'stokRusak',
+            'stokHilang',
             'judulBerbeda'    // Jenis Koleksi
         ));
     }
@@ -70,11 +79,12 @@ class BukuController extends Controller
     {
         // Validasi
         $validated = $request->validate([
-            'judul' => 'required|string|max:255',
+            'judul' => 'required|string|max:255|unique:bukus,judul',
             'pengarang' => 'required|string|max:255',
             'penerbit' => 'required|string|max:255',
             'tahun_terbit' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'isbn' => 'nullable|string|max:20|unique:bukus,isbn',
+            'harga_ganti' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:1',
             'id_kategori' => 'required|exists:kategori_bukus,id_kategori',
             'sinopsis' => 'nullable|string',
@@ -87,7 +97,7 @@ class BukuController extends Controller
         }
 
         // Data Tambahan
-        $validated['slug'] = Str::slug($validated['judul']);
+        $validated['slug'] = Buku::generateUniqueSlug($validated['judul']);
         $validated['stok_tersedia'] = $validated['stok'];
         $validated['status'] = 'tersedia';
 
@@ -117,11 +127,12 @@ class BukuController extends Controller
     {
         // 1. Validasi
         $validated = $request->validate([
-            'judul' => 'required|string|max:255',
+            'judul' => 'required|string|max:255|unique:bukus,judul,' . $data_buku->id_buku . ',id_buku',
             'pengarang' => 'required|string|max:255',
             'penerbit' => 'required|string|max:255',
             'tahun_terbit' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'isbn' => 'nullable|string|max:20|unique:bukus,isbn,' . $data_buku->id_buku . ',id_buku',
+            'harga_ganti' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:0', // Pastikan minimal 0
             'id_kategori' => 'required|exists:kategori_bukus,id_kategori',
             'sinopsis' => 'nullable|string',
@@ -147,7 +158,7 @@ class BukuController extends Controller
         }
 
         // Tambahan data lain
-        $validated['slug'] = Str::slug($validated['judul']);
+        $validated['slug'] = Buku::generateUniqueSlug($validated['judul'], $data_buku->id_buku);
         
         // 4. Eksekusi Update
         $data_buku->update($validated);
@@ -160,9 +171,18 @@ class BukuController extends Controller
      */
     public function destroy(Buku $data_buku)
     {
+        // Cek apakah ada peminjaman aktif untuk buku ini
+        $peminjamanAktif = $data_buku->peminjamans()->aktif()->exists();
+
+        if ($peminjamanAktif) {
+            return redirect()->route('petugas.buku.index')
+                ->with('error', 'Buku tidak dapat dihapus karena sedang dipinjam atau dalam proses peminjaman.');
+        }
+
         if ($data_buku->cover_buku) {
             Storage::disk('public')->delete($data_buku->cover_buku);
         }
+        
         $data_buku->delete();
         return redirect()->route('petugas.buku.index')->with('success', 'Buku berhasil dihapus!');
     }

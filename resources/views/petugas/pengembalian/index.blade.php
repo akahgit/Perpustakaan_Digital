@@ -147,12 +147,20 @@
 
                         <!-- Tombol Aksi -->
                         <td class="px-6 py-4 text-right">
-                            <form action="{{ route('petugas.peminjaman.kembali', $p->id_peminjaman) }}" method="POST" onsubmit="return confirm('Proses pengembalian buku ini?\n\nAnggota: {{ $p->anggota->nama ?? '-' }}\nBuku: {{ $p->buku->judul ?? '-' }}\n\nStok buku akan otomatis bertambah.');">
-                                @csrf
-                                <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-500/30 transition flex items-center gap-1 ml-auto">
-                                    <i class="fas fa-undo"></i> Konfirmasi Kembalian
-                                </button>
-                            </form>
+                            @php
+                                $returnPayload = [
+                                    'action' => route('petugas.peminjaman.kembali', $p->id_peminjaman),
+                                    'buku' => $p->buku->judul ?? '-',
+                                    'anggota' => $p->anggota->nama ?? '-',
+                                    'telat' => (string) $telatHari,
+                                    'estimasi' => number_format($denda, 0, ',', '.'),
+                                ];
+                            @endphp
+                            <button type="button"
+                                    onclick='openReturnModal(@json($returnPayload))'
+                                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-500/30 transition flex items-center gap-1 ml-auto">
+                                <i class="fas fa-undo"></i> Konfirmasi Kembalian
+                            </button>
                         </td>
                     </tr>
                     @empty
@@ -188,14 +196,14 @@
                         <th class="px-6 py-4 font-semibold">Waktu Kembali</th>
                         <th class="px-6 py-4 font-semibold">Anggota</th>
                         <th class="px-6 py-4 font-semibold">Buku</th>
-                        <th class="px-6 py-4 font-semibold text-center">Keterlambatan</th>
+                        <th class="px-6 py-4 font-semibold text-center">Kondisi</th>
                         <th class="px-6 py-4 font-semibold text-right">Denda</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-700/50 text-sm">
                     @php
                         // Ambil data peminjaman yang dikembalikan HARI INI saja
-                        $returnsToday = \App\Models\Peminjaman::with(['anggota', 'buku'])
+                        $returnsToday = \App\Models\Peminjaman::with(['anggota', 'buku', 'denda'])
                             ->where('status_peminjaman', 'dikembalikan')
                             ->whereDate('tanggal_kembali_realisasi', \Carbon\Carbon::today())
                             ->orderBy('tanggal_kembali_realisasi', 'desc')
@@ -209,7 +217,7 @@
                         $realisasi = $r->tanggal_kembali_realisasi;
                         $isLateReturn = $realisasi > $jatuhTempo;
                         $telatHari = $isLateReturn ? $jatuhTempo->diffInDays($realisasi, false) : 0;
-                        $denda = $telatHari * 1000;
+                        $denda = $r->denda->first()?->jumlah_denda ?? ($telatHari * 1000);
                     @endphp
                     <tr class="hover:bg-slate-800/30 transition">
                         <td class="px-6 py-4 text-slate-300">
@@ -222,10 +230,14 @@
                             {{ $r->buku->judul ?? 'N/A' }}
                         </td>
                         <td class="px-6 py-4 text-center">
-                            @if($isLateReturn)
+                            @if($r->kondisi_pengembalian === 'rusak')
+                                <span class="text-amber-400 font-bold">Rusak</span>
+                            @elseif($r->kondisi_pengembalian === 'hilang')
+                                <span class="text-rose-400 font-bold">Hilang</span>
+                            @elseif($isLateReturn)
                                 <span class="text-amber-400 font-bold">{{ $telatHari }} Hari</span>
                             @else
-                                <span class="text-emerald-400 font-bold">Tepat Waktu</span>
+                                <span class="text-emerald-400 font-bold">Baik</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-right font-bold {{ $denda > 0 ? 'text-red-400' : 'text-slate-500' }}">
@@ -249,4 +261,89 @@
     </div>
 
 </div>
+
+<div id="returnModal"
+     class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeReturnModal()"></div>
+
+    <div class="relative w-full max-w-lg bg-[#1e293b] rounded-3xl border border-slate-700 shadow-2xl overflow-hidden">
+        <div class="p-6 border-b border-slate-700/50 flex items-center justify-between">
+            <div>
+                <h3 class="text-xl font-bold text-white">Konfirmasi Pengembalian</h3>
+                <p class="text-xs text-slate-400 mt-1">Pilih kondisi buku untuk sinkronisasi stok dan denda.</p>
+            </div>
+            <button onclick="closeReturnModal()" class="text-slate-400 hover:text-white transition">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="returnForm" method="POST" class="p-6 space-y-5">
+            @csrf
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div class="bg-slate-800/50 rounded-2xl p-4 border border-slate-700">
+                    <p class="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Anggota</p>
+                    <p id="returnAnggota" class="text-white font-bold">-</p>
+                </div>
+                <div class="bg-slate-800/50 rounded-2xl p-4 border border-slate-700">
+                    <p class="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Buku</p>
+                    <p id="returnBuku" class="text-white font-bold">-</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/40 border border-slate-700 rounded-2xl p-4 text-xs text-slate-400 space-y-1">
+                <p>Keterlambatan: <span id="returnTelat" class="text-white font-semibold">0 hari</span></p>
+                <p>Estimasi denda terlambat: <span class="text-amber-400 font-semibold">Rp <span id="returnEstimasi">0</span></span></p>
+                <p>Denda buku rusak otomatis: <span class="text-rose-400 font-semibold">Rp 50.000</span></p>
+                <p>Denda buku hilang otomatis: <span class="text-rose-400 font-semibold">Sesuai harga buku</span></p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">Kondisi Buku Saat Kembali</label>
+                <select id="returnKondisi" name="kondisi_pengembalian" required class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500">
+                    <option value="baik">Baik</option>
+                    <option value="rusak">Rusak</option>
+                    <option value="hilang">Hilang</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">Catatan Kondisi</label>
+                <textarea name="catatan_kondisi" rows="3" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500" placeholder="Contoh: cover robek, halaman basah, buku tidak ditemukan saat penagihan."></textarea>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeReturnModal()" class="flex-1 px-4 py-3 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800 transition font-medium">
+                    Batal
+                </button>
+                <button type="submit" class="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition">
+                    Proses Pengembalian
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openReturnModal(payload) {
+        const modal = document.getElementById('returnModal');
+        const form = document.getElementById('returnForm');
+
+        form.action = payload.action;
+        document.getElementById('returnAnggota').textContent = payload.anggota || '-';
+        document.getElementById('returnBuku').textContent = payload.buku || '-';
+        document.getElementById('returnTelat').textContent = `${payload.telat || 0} hari`;
+        document.getElementById('returnEstimasi').textContent = payload.estimasi || '0';
+        document.getElementById('returnKondisi').value = 'baik';
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeReturnModal() {
+        const modal = document.getElementById('returnModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+</script>
 @endsection

@@ -25,12 +25,19 @@ class HomeController extends Controller
             ->with('buku') // Load relasi buku
             ->get();
 
+        // 3. Buku Terbaru (10 buku terakhir yang diinput)
+        $bukuTerbaru = Buku::with('kategori')
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
         return view('pages.home', compact(
             'totalBuku', 
             'totalEksemplar', 
             'anggotaAktif', 
             'bukuBaru', 
-            'bukuPopuler'
+            'bukuPopuler',
+            'bukuTerbaru'
         ));
     }
 }

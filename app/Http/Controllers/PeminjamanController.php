@@ -7,6 +7,7 @@ use App\Models\Anggota;
 use App\Models\Buku;
 use App\Models\Denda;
 use App\Models\User;
+use App\Http\Controllers\DendaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -82,9 +83,23 @@ class PeminjamanController extends Controller
             'id_anggota' => 'required|exists:anggotas,id',
             'id_buku' => 'required|exists:bukus,id_buku',
             'tanggal_pinjam' => 'required|date',
-            'tanggal_kembali_rencana' => 'required|date|after_or_equal:tanggal_pinjam',
-            'durasi_pinjam' => 'required|integer|min:1',
+            'tanggal_kembali_rencana' => [
+                'required',
+                'date',
+                'after_or_equal:tanggal_pinjam',
+                function ($attribute, $value, $fail) use ($request) {
+                    $tglPinjam = \Carbon\Carbon::parse($request->tanggal_pinjam);
+                    $tglKembali = \Carbon\Carbon::parse($value);
+                    if ($tglKembali->diffInDays($tglPinjam, false) < -7) {
+                        $fail('Batas maksimal peminjaman adalah 7 hari.');
+                    }
+                },
+            ],
+            'durasi_pinjam' => 'required|integer|min:1|max:7',
             'catatan' => 'nullable|string',
+        ], [
+            'durasi_pinjam.max' => 'Durasi peminjaman maksimal adalah 7 hari.',
+            'durasi_pinjam.min' => 'Durasi peminjaman minimal adalah 1 hari.',
         ]);
 
         $buku = Buku::lockForUpdate()->find($validated['id_buku']);
@@ -93,13 +108,32 @@ class PeminjamanController extends Controller
             return back()->withErrors(['id_buku' => 'Maaf, stok buku ini habis atau tidak tersedia.'])->withInput();
         }
 
+        // Cek batas maksimal peminjaman (5 buku)
+        $jumlahPinjamAktif = Peminjaman::where('id_anggota', $validated['id_anggota'])
+            ->whereIn('status_peminjaman', ['dipinjam', 'menunggu_konfirmasi', 'terlambat'])
+            ->count();
+            
+        if ($jumlahPinjamAktif >= 5) {
+            return back()->withErrors(['id_anggota' => 'Anggota ini telah mencapai batas maksimal peminjaman (5 buku).'])->withInput();
+        }
+
+        // Cek apakah sudah meminjam buku yang sama
+        $sudahPinjam = Peminjaman::where('id_anggota', $validated['id_anggota'])
+            ->where('id_buku', $validated['id_buku'])
+            ->whereIn('status_peminjaman', ['dipinjam', 'menunggu_konfirmasi', 'terlambat'])
+            ->exists();
+
+        if ($sudahPinjam) {
+            return back()->withErrors(['id_buku' => 'Anggota ini sedang meminjam buku yang sama.'])->withInput();
+        }
+
         DB::beginTransaction();
         try {
             $buku->decrement('stok_tersedia');
             if ($buku->stok_tersedia == 0) {
                 $buku->update(['status' => 'habis']);
             }
-            $validated['id_petugas'] = Auth::id(); 
+            $validated['id_petugas'] = Auth::user()->petugas->id_petugas ?? null; 
             $validated['status_peminjaman'] = 'dipinjam';
             
             Peminjaman::create($validated);
@@ -158,37 +192,83 @@ class PeminjamanController extends Controller
             return back()->withErrors(['error' => 'Buku ini sudah dicatat sebagai dikembalikan sebelumnya.']);
         }
 
+        $validated = request()->validate([
+            'kondisi_pengembalian' => 'required|in:baik,rusak,hilang',
+            'catatan_kondisi' => 'nullable|string|max:1000',
+        ], [
+            'kondisi_pengembalian.required' => 'Kondisi buku saat dikembalikan wajib dipilih.',
+        ]);
+
         DB::beginTransaction();
         try {
+            $kondisi = $validated['kondisi_pengembalian'];
+            $buku = $peminjaman->id_buku
+                ? Buku::lockForUpdate()->find($peminjaman->id_buku)
+                : null;
 
             $peminjaman->update([
                 'status_peminjaman' => 'dikembalikan',
                 'tanggal_kembali_realisasi' => Carbon::today(),
+                'kondisi_pengembalian' => $kondisi,
+                'catatan_kondisi' => $validated['catatan_kondisi'] ?? null,
             ]);
 
-            if (method_exists(DendaController::class, 'generateDendaOtomatis')) {
-                DendaController::generateDendaOtomatis($peminjaman);
+            $komponenDenda = [];
+
+            $dendaKeterlambatan = DendaController::generateDendaOtomatis($peminjaman);
+            if ($dendaKeterlambatan > 0) {
+                $komponenDenda[] = 'keterlambatan';
             }
 
-
-            if ($peminjaman->buku) {
-                $peminjaman->buku->increment('stok_tersedia');
-                
-                if ($peminjaman->buku->status === 'habis') {
-                    $peminjaman->buku->update(['status' => 'tersedia']);
+            if ($buku) {
+                if ($kondisi === 'baik') {
+                    $buku->increment('stok_tersedia');
+                } elseif ($kondisi === 'rusak') {
+                    $biayaRusak = 50000;
+                    $buku->increment('stok_rusak');
+                    $komponenDenda[] = 'kerusakan';
+                    $this->buatAtauGabungDenda($peminjaman, [
+                        'jenis' => 'kerusakan',
+                        'jumlah' => $biayaRusak,
+                        'deskripsi' => 'Denda buku rusak saat pengembalian.',
+                    ]);
+                } else {
+                    $hargaGanti = (float) ($buku->harga_ganti ?? 50000);
+                    $buku->decrement('stok');
+                    $buku->increment('stok_hilang');
+                    $komponenDenda[] = 'kehilangan';
+                    $this->buatAtauGabungDenda($peminjaman, [
+                        'jenis' => 'kehilangan',
+                        'jumlah' => $hargaGanti,
+                        'deskripsi' => 'Denda penggantian buku hilang sesuai harga buku.',
+                    ]);
                 }
+
+                if ($buku->stok_tersedia > 0) {
+                    $buku->status = 'tersedia';
+                } elseif (($buku->stok_rusak ?? 0) > 0 && $buku->stok_tersedia == 0) {
+                    $buku->status = 'rusak';
+                } else {
+                    $buku->status = 'habis';
+                }
+
+                $buku->save();
             }
 
             DB::commit();
 
-            $pesan = 'Buku berhasil dikembalikan! Stok telah ditambahkan.';
+            $pesan = match ($kondisi) {
+                'rusak' => 'Pengembalian dicatat dengan status buku rusak.',
+                'hilang' => 'Pengembalian dicatat dengan status buku hilang.',
+                default => 'Buku berhasil dikembalikan! Stok telah ditambahkan.',
+            };
             
             $cekDenda = Denda::where('id_peminjaman', $peminjaman->id_peminjaman)
                              ->where('status_pembayaran', 'belum_lunas')
-                             ->first();
+                             ->sum('jumlah_denda');
             
             if ($cekDenda) {
-                $pesan .= ' Terdapat denda sebesar Rp ' . number_format($cekDenda->jumlah_denda, 0, ',', '.') . ' yang harus dibayar anggota.';
+                $pesan .= ' Total denda/tagihan yang harus dibayar anggota adalah Rp ' . number_format($cekDenda, 0, ',', '.') . '.';
             }
 
             return back()->with('success', $pesan);
@@ -199,10 +279,53 @@ class PeminjamanController extends Controller
         }
     }
 
+    protected function buatAtauGabungDenda(Peminjaman $peminjaman, array $detail): void
+    {
+        $denda = Denda::firstOrNew([
+            'id_peminjaman' => $peminjaman->id_peminjaman,
+            'status_pembayaran' => 'belum_lunas',
+        ]);
+
+        $deskripsiLama = collect(explode("\n", (string) $denda->deskripsi))
+            ->filter()
+            ->values();
+
+        if (!$deskripsiLama->contains($detail['deskripsi'])) {
+            $deskripsiLama->push($detail['deskripsi']);
+        }
+
+        if (!$denda->exists) {
+            $denda->hari_terlambat = 0;
+            $denda->denda_per_hari = 0;
+            $denda->jumlah_denda = 0;
+            $denda->jenis_denda = $detail['jenis'];
+        } elseif ($denda->jenis_denda !== $detail['jenis']) {
+            $denda->jenis_denda = 'gabungan';
+        }
+
+        $denda->jumlah_denda = (float) $denda->jumlah_denda + (float) $detail['jumlah'];
+        $denda->deskripsi = $deskripsiLama->implode("\n");
+        $denda->save();
+    }
+
     public function setujuiPeminjaman(Peminjaman $peminjaman)
     {
         if ($peminjaman->status_peminjaman !== 'menunggu_konfirmasi') {
             return back()->withErrors(['error' => 'Transaksi ini tidak dalam status menunggu konfirmasi.']);
+        }
+
+        // Cek apakah anggota memiliki denda belum lunas
+        $adaDenda = \App\Models\Denda::whereHas('peminjaman', function($q) use ($peminjaman) {
+            $q->where('id_anggota', $peminjaman->id_anggota);
+        })->where('status_pembayaran', 'belum_lunas')->exists();
+
+        if ($adaDenda) {
+            $peminjaman->update([
+                'status_peminjaman' => 'ditolak',
+                'id_petugas' => Auth::user()->petugas->id_petugas ?? null,
+                'catatan' => 'Ditolak: Anggota masih memiliki denda yang belum dilunasi.'
+            ]);
+            return back()->withErrors(['error' => 'Peminjaman ditolak otomatis karena anggota masih memiliki denda yang belum lunas.']);
         }
 
         DB::beginTransaction();
@@ -220,7 +343,7 @@ class PeminjamanController extends Controller
 
             $peminjaman->update([
                 'status_peminjaman' => 'dipinjam',
-                'id_petugas' => Auth::id(), 
+                'id_petugas' => Auth::user()->petugas->id_petugas ?? null, 
                 'catatan' => ($peminjaman->catatan ?? '') . ' | Disetujui oleh petugas pada ' . now(),
             ]);
 
@@ -234,6 +357,21 @@ class PeminjamanController extends Controller
         }
     }
 
+    public function tolakPeminjaman(Request $request, Peminjaman $peminjaman)
+    {
+        if ($peminjaman->status_peminjaman !== 'menunggu_konfirmasi') {
+            return back()->withErrors(['error' => 'Transaksi ini tidak dalam status menunggu konfirmasi.']);
+        }
+
+        $peminjaman->update([
+            'status_peminjaman' => 'ditolak',
+            'id_petugas' => Auth::user()->petugas->id_petugas ?? null,
+            'catatan' => 'Ditolak: Pengajuan ditolak oleh petugas.'
+        ]);
+
+        return back()->with('success', 'Peminjaman berhasil ditolak.');
+    }
+
     public function destroy(Peminjaman $peminjaman)
     {
         if ($peminjaman->status_peminjaman === 'dikembalikan') {
@@ -243,7 +381,8 @@ class PeminjamanController extends Controller
         DB::beginTransaction();
         try {
            
-            if ($peminjaman->status_peminjaman === 'dipinjam' && $peminjaman->buku) {
+            // Kembalikan stok jika statusnya masih dipinjam atau terlambat
+            if (in_array($peminjaman->status_peminjaman, ['dipinjam', 'terlambat']) && $peminjaman->buku) {
                 $peminjaman->buku->increment('stok_tersedia');
                 
                 if ($peminjaman->buku->status === 'habis') {
@@ -289,13 +428,24 @@ class PeminjamanController extends Controller
 
         $sedangBeredar = Peminjaman::whereIn('status_peminjaman', ['dipinjam', 'terlambat'])->count();
         
-        // Hitung yang terlambat saja
-        $terlambatKembali = Peminjaman::where('status_peminjaman', 'dipinjam')
-                            ->where('tanggal_kembali_rencana', '<', \Carbon\Carbon::today())
-                            ->count();
+        // Hitung yang terlambat saja (dipinjam lewat jatuh tempo ATAU status sudah terlambat)
+        $peminjamansTerlambat = Peminjaman::where(function($q) {
+                        $q->where('status_peminjaman', 'terlambat')
+                          ->orWhere(function($sq) {
+                              $sq->where('status_peminjaman', 'dipinjam')
+                                 ->where('tanggal_kembali_rencana', '<', \Carbon\Carbon::today());
+                          });
+                    })->get();
 
-        $estimasiDenda = $terlambatKembali * 1000; 
-
+        $terlambatKembali = $peminjamansTerlambat->count();
+        $estimasiDenda = 0;
+        
+        foreach ($peminjamansTerlambat as $lt) {
+             $days = $lt->tanggal_kembali_rencana->diffInDays(\Carbon\Carbon::today(), false);
+             if ($days > 0) {
+                 $estimasiDenda += ($days * 1000);
+             }
+        }
         return view('petugas.pengembalian.index', compact(
             'peminjamans', 
             'sedangBeredar', 

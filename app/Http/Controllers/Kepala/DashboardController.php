@@ -96,22 +96,67 @@ class DashboardController extends Controller
 
         $start_date = "$tahun-$bulan-01";
         $end_date = date('Y-m-t', strtotime($start_date));
+        $namaBulan = Carbon::create()->month((int)$bulan)->translatedFormat('F');
 
+        // 1. Statistik Utama
         $totalTransaksi = Peminjaman::whereBetween('tanggal_pinjam', [$start_date, $end_date])->count();
         $totalDenda = Denda::whereBetween('created_at', [$start_date, $end_date])->sum('jumlah_denda');
+        $totalKembali = Peminjaman::whereBetween('tanggal_kembali_realisasi', [$start_date, $end_date])
+            ->where('status_peminjaman', 'dikembalikan')->count();
+        $kasusBukuRusak = Peminjaman::whereBetween('tanggal_kembali_realisasi', [$start_date, $end_date])
+            ->where('kondisi_pengembalian', 'rusak')->count();
+        $kasusBukuHilang = Peminjaman::whereBetween('tanggal_kembali_realisasi', [$start_date, $end_date])
+            ->where('kondisi_pengembalian', 'hilang')->count();
+        $kerugianInventaris = Denda::whereHas('peminjaman', function($q) use ($start_date, $end_date) {
+                $q->whereBetween('tanggal_kembali_realisasi', [$start_date, $end_date]);
+            })
+            ->whereIn('jenis_denda', ['kerusakan', 'kehilangan', 'gabungan'])
+            ->sum('jumlah_denda');
         
+        // 2. Analisis Tren (Bandingkan dengan bulan sebelumnya)
+        $prevStart = date('Y-m-d', strtotime("$start_date -1 month"));
+        $prevEnd = date('Y-m-t', strtotime("$start_date -1 month"));
+        $prevPinjam = Peminjaman::whereBetween('tanggal_pinjam', [$prevStart, $prevEnd])->count();
+        $trenPinjam = $prevPinjam > 0 ? (($totalTransaksi - $prevPinjam) / $prevPinjam) * 100 : 0;
+        $statusTren = $trenPinjam >= 0 ? 'Naik' : 'Turun';
+
+        // 3. Top 5 Buku Terpopuler
         $topBuku = Peminjaman::select('id_buku', DB::raw('COUNT(*) as total'))
             ->whereBetween('tanggal_pinjam', [$start_date, $end_date])
-            ->with('buku')
+            ->with(['buku' => function($q) { $q->with('kategori'); }])
             ->groupBy('id_buku')
             ->orderByDesc('total')
-            ->limit(3)
+            ->limit(5)
+            ->get();
+
+        // 4. Kepatuhan Pengembalian
+        $telat = Peminjaman::whereBetween('tanggal_kembali_realisasi', [$start_date, $end_date])
+            ->whereColumn('tanggal_kembali_realisasi', '>', 'tanggal_kembali_rencana')->count();
+        $tepat = $totalKembali - $telat;
+        $persenTepat = $totalKembali > 0 ? ($tepat / $totalKembali) * 100 : 0;
+
+        // 5. Rekap Kategori
+        $kategoriStats = Peminjaman::join('bukus', 'peminjamans.id_buku', '=', 'bukus.id_buku')
+            ->join('kategori_bukus', 'bukus.id_kategori', '=', 'kategori_bukus.id_kategori')
+            ->select('kategori_bukus.nama_kategori', DB::raw('COUNT(*) as total'))
+            ->whereBetween('peminjamans.tanggal_pinjam', [$start_date, $end_date])
+            ->groupBy('kategori_bukus.nama_kategori')
+            ->orderByDesc('total')
+            ->get();
+
+        // 6. Top 5 Anggota Teraktif
+        $topAnggota = Peminjaman::select('id_anggota', DB::raw('COUNT(*) as total'))
+            ->whereBetween('tanggal_pinjam', [$start_date, $end_date])
+            ->with('anggota')
+            ->groupBy('id_anggota')
+            ->orderByDesc('total')
+            ->limit(5)
             ->get();
 
         $riwayatLaporan = [];
         if ($totalTransaksi > 0) {
             $riwayatLaporan[] = [
-                'judul' => "Laporan Operasional - " . Carbon::create()->month((int)$bulan)->format('F') . " $tahun",
+                'judul' => "Laporan Operasional - " . $namaBulan . " $tahun",
                 'jenis' => 'Operasional',
                 'tanggal' => $end_date,
                 'status' => 'siap',
@@ -125,10 +170,32 @@ class DashboardController extends Controller
             '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
         ];
 
+        // 7. Dynamic Insight Generation
+        $insight = "";
+        if ($totalTransaksi > 0) {
+            $insight = "Sirkulasi buku bulan ini " . ($trenPinjam >= 0 ? "meningkat" : "menurun") . " sebesar " . number_format(abs($trenPinjam), 1) . "% dibandingkan bulan lalu. ";
+            if ($kategoriStats->count() > 0) {
+                $insight .= "Kategori '" . $kategoriStats->first()->nama_kategori . "' menjadi primadona sirkulasi. ";
+            }
+            if ($persenTepat > 80) {
+                $insight .= "Tingkat kepatuhan pengembalian sangat baik ({$persenTepat}%).";
+            } elseif ($persenTepat > 50) {
+                $insight .= "Tingkat kepatuhan pengembalian cukup stabil ({$persenTepat}%).";
+            } else {
+                $insight .= "Waspada: Tingkat pengembalian tepat waktu rendah ({$persenTepat}%). Perlu penertiban.";
+            }
+        } else {
+            $insight = "Belum ada aktifitas transaksi yang tercatat untuk periode ini.";
+        }
+
         return view('kepala.laporan', compact(
-            'bulan', 'tahun', 'listBulan',
-            'totalTransaksi', 'totalDenda', 'topBuku',
-            'riwayatLaporan'
+            'bulan', 'tahun', 'listBulan', 'namaBulan',
+            'totalTransaksi', 'totalDenda', 'totalKembali',
+            'kasusBukuRusak', 'kasusBukuHilang', 'kerugianInventaris',
+            'topBuku', 'topAnggota', 'kategoriStats',
+            'trenPinjam', 'statusTren', 'prevPinjam',
+            'telat', 'tepat', 'persenTepat',
+            'riwayatLaporan', 'insight'
         ));
     }
 
@@ -152,6 +219,15 @@ class DashboardController extends Controller
         $dendaBelumLunas = Denda::whereHas('peminjaman', function($q) use ($start_date, $end_date) {
                 $q->whereBetween('tanggal_pinjam', [$start_date, $end_date]);
             })->where('status_pembayaran', 'belum_lunas')->sum('jumlah_denda');
+        $kasusBukuRusak = Peminjaman::whereBetween('tanggal_kembali_realisasi', [$start_date, $end_date])
+            ->where('kondisi_pengembalian', 'rusak')->count();
+        $kasusBukuHilang = Peminjaman::whereBetween('tanggal_kembali_realisasi', [$start_date, $end_date])
+            ->where('kondisi_pengembalian', 'hilang')->count();
+        $kerugianInventaris = Denda::whereHas('peminjaman', function($q) use ($start_date, $end_date) {
+                $q->whereBetween('tanggal_kembali_realisasi', [$start_date, $end_date]);
+            })
+            ->whereIn('jenis_denda', ['kerusakan', 'kehilangan', 'gabungan'])
+            ->sum('jumlah_denda');
         
         $anggotaBaru = Anggota::whereBetween('created_at', [$start_date, $end_date])->count();
         $totalAnggotaAktif = Anggota::where('status', 'aktif')->count();
@@ -199,6 +275,7 @@ class DashboardController extends Controller
         $data = compact(
             'bulan', 'tahun', 'namaBulan', 'start_date', 'end_date',
             'totalPinjam', 'totalKembali', 'totalDenda', 'dendaBelumLunas',
+            'kasusBukuRusak', 'kasusBukuHilang', 'kerugianInventaris',
             'anggotaBaru', 'totalAnggotaAktif',
             'trenPinjam', 'statusTren', 'prevPinjam',
             'topBuku', 'topAnggota', 'kategoriStats',
@@ -290,5 +367,18 @@ class DashboardController extends Controller
             'kategoriData', 'topAnggota',
             'tepatWaktuCount', 'terlambatCount', 'totalSelesai'
         ));
+    }
+
+    /**
+     * Audit Log Aktivitas Petugas
+     */
+    public function aktivitas()
+    {
+        $activities = Peminjaman::with(['petugas', 'anggota', 'buku'])
+            ->whereNotNull('id_petugas')
+            ->orderBy('updated_at', 'desc')
+            ->paginate(15);
+
+        return view('kepala.aktivitas', compact('activities'));
     }
 }

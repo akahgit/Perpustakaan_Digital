@@ -68,6 +68,15 @@ class Anggota extends Model
     {
         return $this->hasMany(Peminjaman::class, 'id_anggota'); // Asumsi FK di tabel peminjamans adalah id_anggota
     }
+
+    /**
+     * Relasi ke Ulasan Buku
+     */
+    public function ulasans()
+    {
+        return $this->hasMany(UlasanBuku::class, 'id_anggota', 'id');
+    }
+    
     
     /**
      * Scope untuk mencari anggota aktif saja (Opsional helper)

@@ -12,13 +12,12 @@ class DendaController extends Controller
 {
     /**
      * Display a listing of the resource (Index).
-     * Menampilkan daftar denda yang BELUM LUNAS.
+     * Menampilkan daftar seluruh denda.
      */
     public function index(Request $request)
     {
-        // Query: Ambil denda yang belum lunas, lengkap dengan relasi peminjaman -> anggota & buku
-        $query = Denda::with(['peminjaman.anggota', 'peminjaman.buku'])
-            ->where('status_pembayaran', 'belum_lunas');
+        // Query: Ambil seluruh denda lengkap dengan relasi peminjaman -> anggota & buku
+        $query = Denda::with(['peminjaman.anggota', 'peminjaman.buku']);
 
         // Filter Pencarian (Nama Anggota)
         if ($request->has('search') && $request->search != '') {
@@ -27,6 +26,10 @@ class DendaController extends Controller
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('nis_nisn', 'like', "%{$search}%");
             });
+        }
+
+        if ($request->filled('jenis')) {
+            $query->where('jenis_denda', $request->jenis);
         }
 
         $dendas = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
@@ -147,7 +150,7 @@ class DendaController extends Controller
      * FUNGSI KHUSUS: Generate Denda Otomatis
      * Dipanggil oleh PeminjamanController saat proses pengembalian
      */
-    public static function generateDendaOtomatis(Peminjaman $peminjaman)
+    public static function generateDendaOtomatis(Peminjaman $peminjaman): float
     {
         // Cek apakah telat
         $jatuhTempo = $peminjaman->tanggal_kembali_rencana;
@@ -158,20 +161,42 @@ class DendaController extends Controller
             $dendaPerHari = 1000; // Tarif tetap
             $totalDenda = $hariTerlambat * $dendaPerHari;
 
-            // Cek apakah sudah ada record denda untuk peminjaman ini (mencegah duplikat)
-            $existingDenda = Denda::where('id_peminjaman', $peminjaman->id_peminjaman)->first();
+            $existingDenda = Denda::where('id_peminjaman', $peminjaman->id_peminjaman)
+                ->where('status_pembayaran', 'belum_lunas')
+                ->first();
 
             if (!$existingDenda) {
                 Denda::create([
                     'id_peminjaman' => $peminjaman->id_peminjaman,
+                    'jenis_denda' => 'keterlambatan',
                     'hari_terlambat' => $hariTerlambat,
                     'denda_per_hari' => $dendaPerHari,
                     'jumlah_denda' => $totalDenda,
+                    'deskripsi' => 'Denda keterlambatan pengembalian buku.',
                     'status_pembayaran' => 'belum_lunas',
                 ]);
-                return true; // Denda berhasil dibuat
+                return $totalDenda;
+            }
+
+            if ($existingDenda->hari_terlambat <= 0) {
+                $existingDenda->hari_terlambat = $hariTerlambat;
+                $existingDenda->denda_per_hari = $dendaPerHari;
+                $existingDenda->jumlah_denda += $totalDenda;
+                $existingDenda->jenis_denda = $existingDenda->jenis_denda === 'keterlambatan'
+                    ? 'keterlambatan'
+                    : 'gabungan';
+
+                $deskripsi = collect(explode("\n", (string) $existingDenda->deskripsi))
+                    ->filter()
+                    ->push('Denda keterlambatan pengembalian buku.')
+                    ->unique()
+                    ->implode("\n");
+
+                $existingDenda->deskripsi = $deskripsi;
+                $existingDenda->save();
+                return $totalDenda;
             }
         }
-        return false; // Tidak ada denda (tidak telat atau sudah ada record)
+        return 0; // Tidak ada denda (tidak telat atau sudah ada record)
     }
 }

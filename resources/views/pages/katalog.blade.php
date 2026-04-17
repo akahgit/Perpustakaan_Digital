@@ -95,17 +95,26 @@
                             </div>
                         @endif
                         
-                        <!-- Stock Badge -->
-                        <div class="absolute top-3 left-3 px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-md text-xs font-semibold {{ $isAvailable ? 'text-green-400 border border-green-500/20' : 'text-red-400 border border-red-500/20' }} flex items-center gap-1.5">
-                            <i class="fas {{ $isAvailable ? 'fa-check-circle' : 'fa-times-circle' }} text-[10px]"></i>
-                            {{ $isAvailable ? 'Tersedia: ' . $buku->stok_tersedia : 'Habis' }}
+                        <!-- Stock & Rating Badge -->
+                        <div class="absolute top-3 left-3 flex flex-col gap-2">
+                            <div class="px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-md text-xs font-semibold {{ $isAvailable ? 'text-green-400 border border-green-500/20' : 'text-red-400 border border-red-500/20' }} flex items-center gap-1.5">
+                                <i class="fas {{ $isAvailable ? 'fa-check-circle' : 'fa-times-circle' }} text-[10px]"></i>
+                                {{ $isAvailable ? 'Tersedia: ' . $buku->stok_tersedia : 'Habis' }}
+                            </div>
+                            @if($buku->averageRating > 0)
+                            <div class="px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-md text-xs font-bold text-amber-400 border border-amber-500/20 flex items-center gap-1.5 self-start animate-fade-in">
+                                <i class="fas fa-star text-[10px]"></i>
+                                {{ number_format($buku->averageRating, 1) }}
+                            </div>
+                            @endif
                         </div>
 
                         <!-- Hover Overlay Actions -->
                         <div class="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center gap-3 backdrop-blur-[2px]">
-                            <button class="w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition transform hover:scale-110" title="Detail">
+                            <a href="{{ route('katalog.show', $buku->id_buku) }}" 
+                               class="w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition transform hover:scale-110" title="Detail">
                                 <i class="fas fa-eye text-white text-sm"></i>
-                            </button>
+                            </a>
                             
                             @if($isAvailable)
                                 <!-- TOMBOL PINJAM YANG MENGAKTIFKAN MODAL -->
@@ -123,9 +132,11 @@
 
                     <!-- Book Info -->
                     <div class="p-4 flex-1 flex flex-col">
-                        <h3 class="font-bold text-white text-base mb-1 line-clamp-1 group-hover:text-purple-400 transition" title="{{ $buku->judul }}">
-                            {{ $buku->judul }}
-                        </h3>
+                        <a href="{{ route('katalog.show', $buku->id_buku) }}">
+                            <h3 class="font-bold text-white text-base mb-1 line-clamp-1 group-hover:text-purple-400 transition" title="{{ $buku->judul }}">
+                                {{ $buku->judul }}
+                            </h3>
+                        </a>
                         <p class="text-sm text-gray-400 mb-3 line-clamp-1" title="{{ $buku->pengarang }}">
                             {{ $buku->pengarang }}
                         </p>
@@ -225,16 +236,19 @@
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-slate-300 mb-2">Tanggal Pinjam</label>
-                <input type="date" name="tanggal_pinjam" value="{{ date('Y-m-d') }}" required 
-                       class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:border-purple-500 outline-none transition">
+                <input type="date" name="tanggal_pinjam" id="modalTglPinjam" value="{{ date('Y-m-d') }}" required 
+                       class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:border-purple-500 outline-none transition"
+                       min="{{ date('Y-m-d') }}">
             </div>
 
             <div class="mb-6">
                 <label class="block text-sm font-medium text-slate-300 mb-2">Rencana Kembali</label>
-                <input type="date" name="tanggal_kembali_rencana" min="{{ date('Y-m-d', strtotime('+7 days')) }}" 
+                <input type="date" name="tanggal_kembali_rencana" id="modalTglKembali"
+                       min="{{ date('Y-m-d', strtotime('+1 days')) }}" 
+                       max="{{ date('Y-m-d', strtotime('+7 days')) }}"
                        value="{{ date('Y-m-d', strtotime('+7 days')) }}" required 
                        class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white focus:border-purple-500 outline-none transition">
-                <p class="text-xs text-slate-500 mt-1">Maksimal 7 hari dari tanggal pinjam.</p>
+                <p class="text-xs text-slate-500 mt-1">Maksimal <span class="text-purple-400 font-semibold">7 hari</span> dari tanggal pinjam.</p>
             </div>
 
             <div class="flex gap-3">
@@ -264,6 +278,15 @@ document.addEventListener('DOMContentLoaded', function() {
             modalIdBuku.value = id;
             modalJudulBuku.textContent = judul;
         }
+
+        // Reset dan hitung max tanggal kembali dari tanggal hari ini
+        const tglPinjamEl = document.getElementById('modalTglPinjam');
+        const tglKembaliEl = document.getElementById('modalTglKembali');
+        if (tglPinjamEl && tglKembaliEl) {
+            const today = new Date();
+            tglPinjamEl.value = today.toISOString().split('T')[0];
+            updateMaxTglKembali(tglPinjamEl.value, tglKembaliEl);
+        }
         
         if(modal) {
             modal.classList.remove('hidden');
@@ -276,6 +299,31 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     };
+
+    // Helper: hitung max tanggal kembali (7 hari dari tgl pinjam)
+    function updateMaxTglKembali(tglPinjamVal, tglKembaliEl) {
+        if (!tglPinjamVal || !tglKembaliEl) return;
+        const tglPinjam = new Date(tglPinjamVal);
+        const minDate = new Date(tglPinjam);
+        minDate.setDate(minDate.getDate() + 1);
+        const maxDate = new Date(tglPinjam);
+        maxDate.setDate(maxDate.getDate() + 7);
+
+        const fmt = d => d.toISOString().split('T')[0];
+        tglKembaliEl.min = fmt(minDate);
+        tglKembaliEl.max = fmt(maxDate);
+        // Paksa nilai kembali ke maxDate
+        tglKembaliEl.value = fmt(maxDate);
+    }
+
+    // Listener: jika tanggal pinjam diubah, update batas tanggal kembali
+    const tglPinjamInput = document.getElementById('modalTglPinjam');
+    const tglKembaliInput = document.getElementById('modalTglKembali');
+    if (tglPinjamInput && tglKembaliInput) {
+        tglPinjamInput.addEventListener('change', function() {
+            updateMaxTglKembali(this.value, tglKembaliInput);
+        });
+    }
 
     // Fungsi Tutup Modal
     window.closePinjamModal = function() {

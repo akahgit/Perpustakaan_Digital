@@ -9,10 +9,56 @@ use App\Models\Denda;
 use App\Models\KategoriBuku;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class MemberController extends Controller
 {
+
+
+    /**
+     * UPLOAD BUKTI PEMBAYARAN DENDA
+     */
+    public function uploadBuktiDenda(Request $request)
+    {
+        $request->validate([
+            'id_denda'   => 'required|exists:dendas,id_denda',
+            'bukti_foto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ], [
+            'bukti_foto.required' => 'Wajib mengunggah bukti pembayaran.',
+            'bukti_foto.image'    => 'File harus berupa gambar.',
+            'bukti_foto.max'      => 'Ukuran file maksimal 2MB.',
+        ]);
+
+        $anggota = Anggota::where('user_id', Auth::id())->first();
+        $denda   = Denda::findOrFail($request->id_denda);
+
+        // Keamanan: Pastikan denda milik anggota yang login
+        if ($denda->peminjaman->id_anggota !== $anggota->id) {
+            return back()->with('error', 'Akses ditolak. Denda bukan milik Anda.');
+        }
+
+        // Simpan file
+        if ($request->hasFile('bukti_foto')) {
+            // Hapus bukti lama jika ada
+            if ($denda->bukti_foto) {
+                Storage::disk('public')->delete($denda->bukti_foto);
+            }
+
+            $path = $request->file('bukti_foto')->store('bukti-denda', 'public');
+            
+            $denda->update([
+                'bukti_foto'        => $path,
+                'status_verifikasi' => 'pending',
+                'metode_pembayaran' => 'qris',
+                'tanggal_bayar'     => now(),
+            ]);
+
+            return back()->with('success', 'Bukti pembayaran terkirim! Menunggu verifikasi petugas.');
+        }
+
+        return back()->with('error', 'Gagal mengunggah bukti.');
+    }
     /**
      * KATALOG BUKU
      */
@@ -49,7 +95,20 @@ class MemberController extends Controller
         $validated = $request->validate([
             'id_buku' => 'required|exists:bukus,id_buku',
             'tanggal_pinjam' => 'required|date',
-            'tanggal_kembali_rencana' => 'required|date|after_or_equal:tanggal_pinjam',
+            'tanggal_kembali_rencana' => [
+                'required',
+                'date',
+                'after_or_equal:tanggal_pinjam',
+                function ($attribute, $value, $fail) use ($request) {
+                    $tglPinjam = Carbon::parse($request->tanggal_pinjam);
+                    $tglKembali = Carbon::parse($value);
+                    if ($tglKembali->diffInDays($tglPinjam, false) < -7) {
+                        $fail('Batas maksimal peminjaman adalah 7 hari dari tanggal pinjam.');
+                    }
+                },
+            ],
+        ], [
+            'tanggal_kembali_rencana.after_or_equal' => 'Tanggal kembali tidak boleh sebelum tanggal pinjam.',
         ]);
 
         $anggota = Anggota::where('user_id', Auth::id())->first();
@@ -65,10 +124,19 @@ class MemberController extends Controller
             return back()->withErrors(['error' => 'Maaf, stok buku ini habis.']);
         }
 
+        // Cek batas maksimal peminjaman (5 buku)
+        $jumlahPinjamAktif = Peminjaman::where('id_anggota', $anggota->id)
+            ->whereIn('status_peminjaman', ['dipinjam', 'menunggu_konfirmasi', 'terlambat'])
+            ->count();
+            
+        if ($jumlahPinjamAktif >= 5) {
+            return back()->withErrors(['error' => 'Batas maksimal peminjaman telah tercapai (5 buku). Harap kembalikan buku yang sedang dipinjam terlebih dahulu.']);
+        }
+
         // Cek apakah sudah pernah pinjam buku ini dan belum kembali/belum dikonfirmasi
         $sudahPinjam = Peminjaman::where('id_anggota', $anggota->id)
             ->where('id_buku', $validated['id_buku'])
-            ->whereIn('status_peminjaman', ['dipinjam', 'menunggu_konfirmasi'])
+            ->whereIn('status_peminjaman', ['dipinjam', 'menunggu_konfirmasi', 'terlambat'])
             ->exists();
 
         if ($sudahPinjam) {
@@ -103,19 +171,29 @@ class MemberController extends Controller
         }
 
         // Ambil peminjaman aktif (termasuk yang menunggu konfirmasi)
-        $peminjamans = Peminjaman::with('buku')
+        $peminjamans = Peminjaman::with(['buku', 'denda'])
             ->where('id_anggota', $anggota->id)
-            ->whereIn('status_peminjaman', ['dipinjam', 'terlambat', 'menunggu_konfirmasi'])
+            ->whereIn('status_peminjaman', ['dipinjam', 'terlambat', 'menunggu_konfirmasi', 'ditolak'])
             ->orderBy('tanggal_kembali_rencana', 'asc') // Yang paling cepat jatuh tempo di atas
             ->get();
 
-        // Hitung total denda belum bayar (hanya yang sudah lunas statusnya belum_lunas)
-        // Kita ambil dari tabel dendas yang terhubung dengan peminjaman anggota ini
+        // Hitung total denda (Existing di DB + Estimasi untuk yang sedang terlambat)
         $totalDenda = Denda::whereHas('peminjaman', function($q) use ($anggota) {
                 $q->where('id_anggota', $anggota->id);
             })
             ->where('status_pembayaran', 'belum_lunas')
             ->sum('jumlah_denda');
+
+        // Tambahkan estimasi denda untuk buku yang sedang terlambat tapi belum dikembalikan
+        $peminjamansTerlambat = Peminjaman::where('id_anggota', $anggota->id)
+            ->where('status_peminjaman', 'dipinjam')
+            ->where('tanggal_kembali_rencana', '<', Carbon::today())
+            ->get();
+        
+        foreach ($peminjamansTerlambat as $p) {
+             $days = $p->tanggal_kembali_rencana->diffInDays(Carbon::today(), false);
+             $totalDenda += ($days * 1000);
+        }
 
         return view('pages.peminjaman', compact('peminjamans', 'totalDenda', 'anggota'));
     }
@@ -132,7 +210,7 @@ class MemberController extends Controller
             return redirect()->route('profil')->with('error', 'Data tidak ditemukan.');
         }
 
-        $riwayats = Peminjaman::with('buku')
+        $riwayats = Peminjaman::with(['buku', 'denda'])
             ->where('id_anggota', $anggota->id)
             ->where('status_peminjaman', 'dikembalikan')
             ->orderBy('tanggal_kembali_realisasi', 'desc')
@@ -157,22 +235,67 @@ class MemberController extends Controller
     }
 
     /**
+     * DETAIL BUKU (KATALOG)
+     */
+    public function detailBuku($id_buku)
+    {
+        $buku = Buku::with(['kategori', 'ulasans' => function($q) {
+            $q->orderBy('created_at', 'desc');
+        }, 'ulasans.anggota'])->findOrFail($id_buku);
+        
+        return view('pages.katalog-show', compact('buku'));
+    }
+
+    /**
      * UPDATE PROFIL SENDIRI
      */
     public function updateProfil(Request $request)
     {
-        $anggota = Anggota::where('user_id', Auth::id())->first();
+        $user = Auth::user();
+        $anggota = Anggota::where('user_id', $user->id)->first();
         
         $validated = $request->validate([
+            'name'       => 'required|string|max:255',
+            'email'      => 'required|email|unique:users,email,' . $user->id,
             'no_telepon' => 'nullable|string|max:20',
-            'alamat' => 'nullable|string',
+            'alamat'     => 'nullable|string',
+        ]);
+
+        $user->update([
+            'name'  => $validated['name'],
+            'email' => $validated['email'],
         ]);
 
         if ($anggota) {
-            $anggota->update($validated);
-            return back()->with('success', 'Profil berhasil diperbarui!');
+            $anggota->update([
+                'nama'       => $validated['name'],
+                'email'      => $validated['email'],
+                'no_telepon' => $validated['no_telepon'],
+                'alamat'     => $validated['alamat'],
+            ]);
         }
 
-        return back()->with('error', 'Gagal memperbarui profil.');
+        return back()->with('success', 'Profil berhasil diperbarui!');
+    }
+
+    /**
+     * UPDATE PASSWORD SENDIRI
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password'         => 'required|min:6|confirmed',
+        ]);
+
+        if (!\Illuminate\Support\Facades\Hash::check($request->current_password, Auth::user()->password)) {
+            return back()->with('error', 'Password saat ini salah.');
+        }
+
+        Auth::user()->update([
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+        ]);
+
+        return back()->with('success', 'Password berhasil diubah!');
     }
 }

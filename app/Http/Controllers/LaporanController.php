@@ -9,6 +9,7 @@ use App\Models\Anggota;
 use App\Models\Denda;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class LaporanController extends Controller
 {
@@ -52,6 +53,20 @@ class LaporanController extends Controller
             $q->whereBetween('tanggal_kembali_realisasi', [$startDate, $endDate]);
         })->sum('jumlah_denda');
 
+        $kasusBukuRusak = Peminjaman::whereBetween('tanggal_kembali_realisasi', [$startDate, $endDate])
+            ->where('kondisi_pengembalian', 'rusak')
+            ->count();
+
+        $kasusBukuHilang = Peminjaman::whereBetween('tanggal_kembali_realisasi', [$startDate, $endDate])
+            ->where('kondisi_pengembalian', 'hilang')
+            ->count();
+
+        $totalKerugianInventaris = Denda::whereHas('peminjaman', function($q) use ($startDate, $endDate) {
+                $q->whereBetween('tanggal_kembali_realisasi', [$startDate, $endDate]);
+            })
+            ->whereIn('jenis_denda', ['kerusakan', 'kehilangan', 'gabungan'])
+            ->sum('jumlah_denda');
+
         // --- 5. ANALISIS KATEGORI BUKU ---
         $kategoriStats = Peminjaman::join('bukus', 'peminjamans.id_buku', '=', 'bukus.id_buku')
             ->join('kategori_bukus', 'bukus.id_kategori', '=', 'kategori_bukus.id_kategori')
@@ -92,22 +107,37 @@ class LaporanController extends Controller
             $labelsGrafik[] = $date->format('d');
         }
 
-        // --- 9. RINCIAN TRANSAKSI ---
-        $transaksiDetail = Peminjaman::with(['anggota', 'buku', 'petugas'])
-    ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
-    ->orWhereBetween('tanggal_kembali_realisasi', [$startDate, $endDate])
-    ->orderBy('tanggal_pinjam', 'desc')
-    ->get();
+        // --- 9. STATISTIK PETUGAS (PERSONAL PROFILE STATS) ---
+        $petugas = Auth::user()->petugas;
+        $petugasStats = [
+            'total_proses' => $petugas 
+                ? Peminjaman::where('id_petugas', $petugas->id_petugas)
+                    ->whereBetween('tanggal_pinjam', [$startDate, $endDate])
+                    ->count()
+                : 0,
+            'nama' => Auth::user()->name,
+            'since' => Auth::user()->created_at->format('M Y')
+        ];
+
+        // --- 10. RINCIAN TRANSAKSI ---
+        $transaksiDetail = Peminjaman::with(['anggota', 'buku', 'petugas', 'denda'])
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('tanggal_pinjam', [$startDate, $endDate])
+                    ->orWhereBetween('tanggal_kembali_realisasi', [$startDate, $endDate]);
+            })
+            ->orderBy('tanggal_pinjam', 'desc')
+            ->get();
 
         // Return View dengan semua variabel yang lengkap
         return view('petugas.laporan.index', compact(
             'totalPinjam', 'totalKembali', 'bukuPopuler', 
             'anggotaAktif', 'anggotaBaru', 
             'totalDendaDiterima', 'totalPiutang', 'dendaTerhitung',
+            'kasusBukuRusak', 'kasusBukuHilang', 'totalKerugianInventaris',
             'grafikData', 'labelsGrafik', 'bulan', 'tahun', 'namaBulan',
             'trenPersen', 'trenStatus', 'prevPinjam',
             'kategoriStats', 'totalTerlambat', 'totalTepatWaktu', 'persenKepatuhan',
-            'transaksiDetail', 'startDate', 'endDate'
+            'transaksiDetail', 'startDate', 'endDate', 'petugasStats'
         ));
     }
 

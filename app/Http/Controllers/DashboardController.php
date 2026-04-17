@@ -27,20 +27,24 @@ class DashboardController extends Controller
                                 ->count();
 
         // 3. Statistik Peminjaman
-        $peminjamanAktif = Peminjaman::where('status_peminjaman', 'dipinjam')->count();
+        $peminjamanAktif = Peminjaman::whereIn('status_peminjaman', ['dipinjam', 'terlambat'])->count();
         
         // Peminjaman Hari Ini
         $peminjamanHariIni = Peminjaman::whereDate('tanggal_pinjam', Carbon::today())->count();
         
         // Jatuh Tempo Hari Ini (Harus kembali hari ini)
         $jatuhTempoHariIni = Peminjaman::whereDate('tanggal_kembali_rencana', Carbon::today())
-                            ->where('status_peminjaman', 'dipinjam')
+                            ->whereIn('status_peminjaman', ['dipinjam', 'terlambat'])
                             ->count();
 
-        // Terlambat (Sudah lewat tanggal kembali & status masih dipinjam)
-        $terlambat = Peminjaman::where('status_peminjaman', 'dipinjam')
-                    ->where('tanggal_kembali_rencana', '<', Carbon::today())
-                    ->count();
+        // Terlambat (Sudah lewat tanggal kembali ATAU status sudah terlambat)
+        $terlambat = Peminjaman::where(function($q) {
+                        $q->where('status_peminjaman', 'terlambat')
+                          ->orWhere(function($sq) {
+                              $sq->where('status_peminjaman', 'dipinjam')
+                                 ->where('tanggal_kembali_rencana', '<', Carbon::today());
+                          });
+                    })->count();
 
         // 4. Statistik Denda
         $dendaBelumLunas = Denda::where('status_pembayaran', 'belum_lunas')->sum('jumlah_denda');

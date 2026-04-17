@@ -3,390 +3,379 @@
 @section('title', 'Beranda - Perpustakaan Digital')
 
 @section('content')
-    <div class="bg-[#050505] min-h-screen">
+<div class="bg-[#020617] min-h-screen text-slate-200 overflow-x-hidden">
 
-        <!-- 1. HERO SECTION -->
-        <section class="relative pt-20 pb-32 overflow-hidden">
-            <!-- Background Glow Effects -->
-            <div
-                class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none">
-            </div>
-            <div
-                class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none">
-            </div>
+    <!-- ══ 1. HERO SECTION (ULTRA MODERN) ══ -->
+    <section class="relative min-h-[90vh] flex items-center pt-10 pb-20 overflow-hidden">
+        {{-- Floating Orbs Decoration --}}
+        <div class="absolute top-[10%] left-[5%] w-[400px] h-[400px] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse"></div>
+        <div class="absolute bottom-[10%] right-[5%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[150px] animate-bounce-slow"></div>
 
-            <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div class="grid lg:grid-cols-2 gap-16 items-center">
-
-                    <!-- Left Content -->
-                    <div class="space-y-8 text-center lg:text-left">
-                        <!-- Badge -->
-                        <div
-                            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-                            <span class="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
-                            <span class="text-sm font-medium text-gray-300">Selamat datang di Perpustakaan Digital</span>
-                        </div>
-
-                        <!-- Headline -->
-                        <h1 class="text-5xl lg:text-7xl font-extrabold leading-tight tracking-tight">
-                            Jelajahi Dunia<br>
-                            <span
-                                class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400">
-                                Melalui Buku
-                            </span>
-                        </h1>
-
-                        <!-- Description -->
-                        <p class="text-lg text-gray-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                            Pinjam buku kapan saja, di mana saja. Akses ribuan koleksi buku dari berbagai genre dan penulis
-                            terbaik.
-                        </p>
-
-                        <!-- Buttons -->
-                        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                            <a href="{{ route('katalog') }}"
-                                class="group px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-full shadow-xl shadow-purple-500/25 transition transform hover:scale-105 flex items-center justify-center gap-2">
-                                <i class="fas fa-compass"></i>
-                                Jelajahi Katalog
-                                <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                            </a>
-                            <a href="#cara-kerja"
-                                class="px-8 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 text-white font-semibold rounded-full transition flex items-center justify-center gap-2">
-                                <i class="fas fa-play-circle text-purple-400"></i>
-                                Pelajari Lebih
-                            </a>
-                        </div>
-
-                        <!-- Stats DINAMIS -->
-                        <div class="grid grid-cols-3 gap-8 pt-8 border-t border-white/10 mt-8">
-                            <div>
-                                <div class="text-3xl lg:text-4xl font-bold text-white mb-1">
-                                    {{ number_format($totalEksemplar ?? 0) }}+</div>
-                                <div class="text-sm text-gray-500 font-medium">Koleksi Buku</div>
-                            </div>
-                            <div>
-                                <div class="text-3xl lg:text-4xl font-bold text-white mb-1">
-                                    {{ number_format($anggotaAktif ?? 0) }}+</div>
-                                <div class="text-sm text-gray-500 font-medium">Anggota Aktif</div>
-                            </div>
-                            <div>
-                                <div class="text-3xl lg:text-4xl font-bold text-white mb-1">
-                                    {{ number_format($bukuBaru ?? 0) }}+</div>
-                                <div class="text-sm text-gray-500 font-medium">Judul Baru</div>
-                            </div>
-                        </div>
+        <div class="max-w-[1600px] mx-auto px-6 lg:px-12 relative z-10 w-full">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                
+                {{-- Left Side: Text & CTA --}}
+                <div class="space-y-10 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-3 px-5 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl animate-fade-in-down">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                        </span>
+                        <span class="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-300">Era Baru Literasi Digital</span>
                     </div>
 
-                    <!-- Right Content (Floating Books) -->
-                    <div class="relative hidden lg:block h-[600px]">
-                        <!-- Central Glow -->
-                        <div
-                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-purple-500/30 via-indigo-500/30 to-pink-500/30 rounded-full blur-3xl">
-                        </div>
+                    <h1 class="text-6xl lg:text-8xl font-black leading-[0.95] tracking-tight animate-fade-in-up">
+                        Buka <span class="text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400">Dimensi</span> <br>
+                        Baru Pengetahuan.
+                    </h1>
 
-                        <!-- Book Cards Stack (Visual Only) -->
-                        <div class="relative w-full h-full flex items-center justify-center">
-                            <!-- Book 1 (Back - Blue) -->
-                            <div
-                                class="absolute w-64 h-80 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl shadow-2xl transform rotate-[-12deg] translate-x-[-80px] translate-y-[20px] border border-white/10 z-10">
-                                <div class="absolute inset-0 flex flex-col items-center justify-center p-6">
-                                    <i class="fas fa-book text-6xl text-white/30 mb-4"></i>
-                                    <div class="text-white/80 text-center">
-                                        <div class="font-bold text-lg">Bumi Manusia</div>
-                                        <div class="text-xs opacity-70">Pramoedya A.T.</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Book 2 (Middle - Purple/Pink) -->
-                            <div
-                                class="absolute w-64 h-80 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-2xl transform rotate-[-6deg] translate-x-[-40px] border border-white/10 z-20">
-                                <div class="absolute inset-0 flex flex-col items-center justify-center p-6">
-                                    <i class="fas fa-book text-6xl text-white/30 mb-4"></i>
-                                    <div class="text-white text-center">
-                                        <div class="font-bold text-lg mb-1">Laskar Pelangi</div>
-                                        <div class="text-xs opacity-80">Andrea Hirata</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Book 3 (Front - Indigo) -->
-                            <div
-                                class="absolute w-64 h-80 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl shadow-2xl transform rotate-[6deg] translate-x-[40px] border border-white/10 z-30">
-                                <div class="absolute inset-0 flex flex-col items-center justify-center p-6">
-                                    <i class="fas fa-book text-6xl text-white/30 mb-4"></i>
-                                    <div class="text-white/80 text-center">
-                                        <div class="font-bold text-lg">Filosofi Teras</div>
-                                        <div class="text-xs opacity-70">Henry Manampiring</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 2. FITUR UNGGULAN -->
-        <section id="fitur" class="py-24 bg-[#050505] relative">
-            <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-                <!-- Header -->
-                <div class="text-center mb-16">
-                    <div class="inline-block px-4 py-1.5 mb-4 rounded-full bg-white/5 border border-white/10">
-                        <span class="text-purple-300 text-xs font-bold uppercase tracking-wider">Fitur Unggulan</span>
-                    </div>
-                    <h2 class="text-4xl lg:text-5xl font-bold mb-4">
-                        Kemudahan dalam <span
-                            class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Genggaman</span>
-                    </h2>
-                    <p class="text-gray-400 text-lg max-w-2xl mx-auto">
-                        Nikmati berbagai fitur yang memudahkan Anda dalam meminjam dan mengelola buku.
+                    <p class="text-lg text-slate-400 max-w-xl mx-auto lg:mx-0 leading-relaxed opacity-80 animate-fade-in-up" style="animation-delay: 0.2s">
+                        Sistem perpustakaan tercanggih yang menghadirkan koleksi buku premium dalam genggaman Anda. Pinjam, baca, dan jelajahi ribuan judul dengan satu sentuhan.
                     </p>
-                </div>
 
-                <!-- Grid Features -->
-                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Feature 1: Cari Buku -->
-                    <div
-                        class="group p-8 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-purple-500/30 hover:bg-white/[0.06] transition duration-300">
-                        <div
-                            class="w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 shadow-lg shadow-purple-500/20">
-                            <i class="fas fa-search text-2xl text-white"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-white">Cari Buku</h3>
-                        <p class="text-gray-400 text-sm leading-relaxed">Temukan buku favoritmu dengan mudah melalui katalog
-                            digital kami.</p>
-                    </div>
-
-                    <!-- Feature 2: Pinjam Online -->
-                    <div
-                        class="group p-8 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-indigo-500/30 hover:bg-white/[0.06] transition duration-300">
-                        <div
-                            class="w-14 h-14 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 shadow-lg shadow-indigo-500/20">
-                            <i class="fas fa-hand-holding-heart text-2xl text-white"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-white">Pinjam Online</h3>
-                        <p class="text-gray-400 text-sm leading-relaxed">Ajukan peminjaman buku secara online tanpa perlu
-                            datang langsung.</p>
-                    </div>
-
-                    <!-- Feature 3: Kembalikan Buku -->
-                    <div
-                        class="group p-8 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-emerald-500/30 hover:bg-white/[0.06] transition duration-300">
-                        <div
-                            class="w-14 h-14 bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 shadow-lg shadow-emerald-500/20">
-                            <i class="fas fa-undo text-2xl text-white"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-white">Kembalikan Buku</h3>
-                        <p class="text-gray-400 text-sm leading-relaxed">Proses pengembalian buku yang simpel dan
-                            transparan.</p>
-                    </div>
-
-                    <!-- Feature 4: Riwayat Lengkap -->
-                    <div
-                        class="group p-8 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-amber-500/30 hover:bg-white/[0.06] transition duration-300">
-                        <div
-                            class="w-14 h-14 bg-gradient-to-br from-amber-600 to-amber-700 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-300 shadow-lg shadow-amber-500/20">
-                            <i class="fas fa-history text-2xl text-white"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-white">Riwayat Lengkap</h3>
-                        <p class="text-gray-400 text-sm leading-relaxed">Pantau semua riwayat peminjaman dan denda dalam
-                            satu tempat.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3. BUKU TERPOPULER (DINAMIS) -->
-        <section id="katalog" class="py-24 bg-[#050505] relative border-t border-white/5">
-            <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-                <!-- Header -->
-                <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-                    <div>
-                        <div class="inline-block px-3 py-1 mb-3 rounded-full bg-white/5 border border-white/10">
-                            <span class="text-purple-300 text-xs font-bold uppercase tracking-wider">Koleksi Populer</span>
-                        </div>
-                        <h2 class="text-3xl lg:text-4xl font-bold">Buku Terpopuler</h2>
-                    </div>
-                    <a href="{{ route('katalog') }}"
-                        class="text-purple-400 hover:text-purple-300 font-medium flex items-center gap-2 transition group">
-                        Lihat Semua
-                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-                </div>
-
-                <!-- Grid Buku -->
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                    @forelse($bukuPopuler as $item)
-                        @php
-                            // CEK KEAMANAN: Pastikan relasi buku ada
-                            if (!$item->buku) {
-                                continue; // Lewati item ini jika bukunya sudah dihapus
-                            }
-
-                            $buku = $item->buku; // Ambil objek buku
-
-                            // Warna gradient konsisten berdasarkan ID
-                            $colors = [
-                                'from-purple-500 to-pink-600',
-                                'from-blue-500 to-cyan-600',
-                                'from-indigo-500 to-blue-600',
-                                'from-emerald-500 to-teal-600',
-                                'from-amber-500 to-orange-600',
-                            ];
-                            $colorClass = $colors[$buku->id_buku % count($colors)];
-
-                            // Cek stok
-                            $tersedia = $buku->stok_tersedia > 0;
-                        @endphp
-
-                        <div
-                            class="group bg-white/[0.03] rounded-2xl border border-white/5 overflow-hidden hover:border-purple-500/30 transition duration-300">
-                            <!-- Cover -->
-                            <div
-                                class="aspect-[2/3] bg-gradient-to-br {{ $colorClass }} flex items-center justify-center relative overflow-hidden">
-                                @if ($buku->cover_buku && file_exists(public_path('storage/' . $buku->cover_buku)))
-                                    <img src="{{ asset('storage/' . $buku->cover_buku) }}" alt="{{ $buku->judul }}"
-                                        class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-500">
-                                @else
-                                    <i
-                                        class="fas fa-book text-5xl text-white/30 group-hover:scale-110 transition duration-500"></i>
-                                @endif
-
-                                <!-- Overlay Button -->
-                                <div
-                                    class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center gap-3">
-                                    <a href="{{ route('katalog') }}"
-                                        class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition"
-                                        title="Detail">
-                                        <i class="fas fa-eye text-white"></i>
-                                    </a>
-                                </div>
-
-                                <!-- Badge Stok -->
-                                <div
-                                    class="absolute top-3 right-3 px-2 py-1 bg-black/40 backdrop-blur-md rounded-md text-xs font-medium {{ $tersedia ? 'text-green-400 border border-green-500/20' : 'text-red-400 border border-red-500/20' }} border border-white/10">
-                                    {{ $tersedia ? 'Tersedia' : 'Habis' }}
-                                </div>
-                            </div>
-
-                            <!-- Info -->
-                            <div class="p-4">
-                                <h4 class="font-bold text-white mb-1 truncate" title="{{ $buku->judul }}">
-                                    {{ $buku->judul }}</h4>
-                                <p class="text-sm text-gray-400 truncate" title="{{ $buku->pengarang }}">
-                                    {{ $buku->pengarang }}</p>
-                                <div class="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-                                    <span class="text-xs text-gray-500">{{ $buku->tahun_terbit }}</span>
-                                    <a href="{{ route('katalog') }}"
-                                        class="text-xs font-semibold text-purple-400 hover:text-purple-300 transition">
-                                        + Pinjam
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <!-- Empty State jika belum ada data peminjaman -->
-                        <div class="col-span-full text-center py-10">
-                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
-                                <i class="fas fa-chart-bar text-2xl text-gray-500"></i>
-                            </div>
-                            <p class="text-gray-400 mb-4">Belum ada data peminjaman untuk menampilkan buku populer.</p>
-                            <a href="{{ route('katalog') }}"
-                                class="inline-block px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-full transition">
-                                Lihat Semua Buku
-                            </a>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-        </section>
-
-        <!-- 4. CARA KERJA -->
-        <section id="cara-kerja" class="py-24 bg-[#050505] relative border-t border-white/5">
-            <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-                <!-- Header -->
-                <div class="text-center mb-16">
-                    <div class="inline-block px-3 py-1 mb-3 rounded-full bg-white/5 border border-white/10">
-                        <span class="text-purple-300 text-xs font-bold uppercase tracking-wider">Cara Kerja</span>
-                    </div>
-                    <h2 class="text-4xl lg:text-5xl font-bold mb-4">
-                        Mudah & <span
-                            class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Cepat</span>
-                    </h2>
-                    <p class="text-gray-400 text-lg max-w-2xl mx-auto">
-                        Hanya butuh 3 langkah sederhana untuk meminjam buku.
-                    </p>
-                </div>
-
-                <!-- Steps -->
-                <div class="grid md:grid-cols-3 gap-8 relative">
-                    <!-- Connecting Line (Desktop) -->
-                    <div
-                        class="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-purple-600/20 via-indigo-600/20 to-blue-600/20 z-0">
-                    </div>
-
-                    <!-- Step 1 -->
-                    <div class="relative z-10 text-center group">
-                        <div
-                            class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl shadow-purple-500/20 group-hover:scale-110 transition duration-300">
-                            <span class="text-4xl font-bold text-white">1</span>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-white">Cari Buku</h3>
-                        <p class="text-gray-400 text-sm leading-relaxed max-w-xs mx-auto">
-                            Jelajahi katalog dan temukan buku yang ingin Anda pinjam.
-                        </p>
-                    </div>
-
-                    <!-- Step 2 -->
-                    <div class="relative z-10 text-center group">
-                        <div
-                            class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-500/20 group-hover:scale-110 transition duration-300">
-                            <span class="text-4xl font-bold text-white">2</span>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-white">Ajukan Peminjaman</h3>
-                        <p class="text-gray-400 text-sm leading-relaxed max-w-xs mx-auto">
-                            Klik pinjam dan tentukan tanggal pengembalian.
-                        </p>
-                    </div>
-
-                    <!-- Step 3 -->
-                    <div class="relative z-10 text-center group">
-                        <div
-                            class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/20 group-hover:scale-110 transition duration-300">
-                            <span class="text-4xl font-bold text-white">3</span>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-white">Ambil & Baca</h3>
-                        <p class="text-gray-400 text-sm leading-relaxed max-w-xs mx-auto">
-                            Ambil buku di perpustakaan dan nikmati bacaan Anda.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 5. CTA SECTION -->
-        <section class="py-24 bg-[#050505] relative">
-            <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="relative rounded-3xl overflow-hidden">
-                    <!-- Background with Gradient -->
-                    <div class="absolute inset-0 bg-gradient-to-r from-purple-900/40 to-indigo-900/40 backdrop-blur-sm">
-                    </div>
-                    <div class="absolute inset-0 border border-white/10 rounded-3xl"></div>
-
-                    <div class="relative bg-[#0a0a0a]/80 rounded-3xl p-12 md:p-20 text-center">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-4">Siap Mulai Membaca?</h2>
-                        <p class="text-gray-400 mb-8 max-w-xl mx-auto text-lg">
-                            Jelajahi ribuan koleksi buku dan temukan bacaan favoritmu sekarang.
-                        </p>
-                        <a href="{{ route('katalog') }}"
-                            class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-full shadow-xl shadow-purple-500/25 transition transform hover:scale-105">
-                            <i class="fas fa-book-open"></i>
-                            Jelajahi Katalog Buku
+                    <div class="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start animate-fade-in-up" style="animation-delay: 0.4s">
+                        <a href="{{ route('katalog') }}" 
+                           class="group px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-3xl shadow-2xl shadow-indigo-600/20 transition-all flex items-center justify-center gap-4 hover:-translate-y-1">
+                            <i class="fas fa-rocket"></i>
+                            Mulai Menjelajah
+                            <i class="fas fa-chevron-right text-xs group-hover:translate-x-2 transition-transform"></i>
+                        </a>
+                        <a href="#fitur" 
+                           class="px-10 py-5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-3xl backdrop-blur-xl transition-all flex items-center justify-center gap-3">
+                            <i class="fas fa-play text-[10px] text-indigo-400"></i>
+                            Lihat Cara Kerja
                         </a>
                     </div>
+
+                    {{-- Stats with Glass Effect --}}
+                    <div class="grid grid-cols-3 gap-6 pt-12 animate-fade-in-up" style="animation-delay: 0.6s">
+                        <div class="p-6 rounded-[32px] bg-white/3 border border-white/5 backdrop-blur-md">
+                            <div class="text-3xl font-black text-white mb-1">{{ number_format($totalEksemplar ?? 0) }}+</div>
+                            <div class="text-[9px] font-black uppercase tracking-widest text-slate-500">Total Koleksi</div>
+                        </div>
+                        <div class="p-6 rounded-[32px] bg-white/3 border border-white/5 backdrop-blur-md">
+                            <div class="text-3xl font-black text-white mb-1">{{ number_format($anggotaAktif ?? 0) }}+</div>
+                            <div class="text-[9px] font-black uppercase tracking-widest text-slate-500">Anggota Aktif</div>
+                        </div>
+                        <div class="p-6 rounded-[32px] bg-white/3 border border-white/5 backdrop-blur-md">
+                            <div class="text-3xl font-black text-white mb-1">{{ number_format($bukuBaru ?? 0) }}+</div>
+                            <div class="text-[9px] font-black uppercase tracking-widest text-slate-500">Judul Baru</div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Right Side: Modern Staggered Philosophy Books --}}
+                <div class="relative hidden lg:block animate-fade-in-right">
+                    {{-- Label section --}}
+                    <div class="flex items-center justify-between mb-6">
+                        <span class="text-[9px] font-black uppercase tracking-[0.25em] text-indigo-500/70">Featured Collection</span>
+                        <div class="h-px flex-1 mx-4 bg-gradient-to-r from-indigo-500/20 to-transparent"></div>
+                        <span class="text-[9px] font-black uppercase tracking-widest text-slate-600">4 Filsafat Pilihan</span>
+                    </div>
+
+                    {{-- Staggered Books Container --}}
+                    <div class="relative flex justify-center items-center min-h-[550px]">
+                        
+                        {{-- Book 1: Kant - Bottom Left (Paling belakang) --}}
+                        <div class="absolute bottom-0 left-0 w-[180px] md:w-[200px] group cursor-pointer transition-all duration-500 hover:z-30 hover:-translate-y-4 z-10 rotate-[-8deg] hover:rotate-0"
+                             style="filter: drop-shadow(0 20px 15px rgba(0,0,0,0.5));">
+                            <div class="relative rounded-[20px] overflow-hidden aspect-[3/4]">
+                                <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=533&fit=crop" 
+                                     alt="Critique of Pure Reason"
+                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity"></div>
+                                <div class="absolute bottom-0 left-0 right-0 p-4">
+                                    <span class="inline-block text-[7px] font-black uppercase tracking-[0.15em] text-indigo-300 bg-indigo-500/30 px-2 py-0.5 rounded-full mb-1 backdrop-blur-sm">Filsafat</span>
+                                    <h4 class="text-white font-black text-[11px] leading-tight">Critique of Pure Reason</h4>
+                                    <p class="text-indigo-300/70 text-[8px] font-semibold">Immanuel Kant</p>
+                                </div>
+                            </div>
+                            <div class="absolute -top-3 -right-3 bg-indigo-600/90 backdrop-blur-sm text-white text-[7px] font-black px-2 py-0.5 rounded-full border border-white/20 shadow-lg">
+                                Best Seller
+                            </div>
+                        </div>
+
+                        {{-- Book 2: Heidegger - Bottom Right (Sedikit lebih depan) --}}
+                        <div class="absolute bottom-0 right-0 w-[180px] md:w-[200px] group cursor-pointer transition-all duration-500 hover:z-30 hover:-translate-y-4 z-20 rotate-[8deg] hover:rotate-0"
+                             style="filter: drop-shadow(0 20px 15px rgba(0,0,0,0.5));">
+                            <div class="relative rounded-[20px] overflow-hidden aspect-[3/4]">
+                                <img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=533&fit=crop" 
+                                     alt="Being and Time"
+                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity"></div>
+                                <div class="absolute bottom-0 left-0 right-0 p-4">
+                                    <span class="inline-block text-[7px] font-black uppercase tracking-[0.15em] text-amber-300 bg-amber-500/30 px-2 py-0.5 rounded-full mb-1 backdrop-blur-sm">Eksistensial</span>
+                                    <h4 class="text-white font-black text-[11px] leading-tight">Being and Time</h4>
+                                    <p class="text-amber-300/70 text-[8px] font-semibold">M. Heidegger</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Book 3: Aristotle - Center (Paling depan - Hero position) --}}
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[200px] md:w-[240px] group cursor-pointer transition-all duration-500 hover:z-30 hover:-translate-y-6 z-30"
+                             style="filter: drop-shadow(0 25px 20px rgba(0,0,0,0.6));">
+                            <div class="relative rounded-[24px] overflow-hidden aspect-[3/4] border-2 border-white/20">
+                                <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=400&h=533&fit=crop" 
+                                     alt="Nicomachean Ethics"
+                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-75 group-hover:opacity-95 transition-opacity"></div>
+                                <div class="absolute bottom-0 left-0 right-0 p-5">
+                                    <span class="inline-block text-[8px] font-black uppercase tracking-[0.15em] text-emerald-300 bg-emerald-500/30 px-2 py-0.5 rounded-full mb-2 backdrop-blur-sm">Etika</span>
+                                    <h4 class="text-white font-black text-sm leading-tight">Nicomachean Ethics</h4>
+                                    <p class="text-emerald-300/70 text-[9px] font-semibold">Aristotle</p>
+                                    <div class="flex items-center gap-1 mt-2 text-amber-400 text-[9px] font-black">
+                                        <i class="fas fa-star text-[8px]"></i> 4.7
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="absolute -top-4 -right-4 bg-emerald-600/90 backdrop-blur-sm text-white text-[8px] font-black px-2.5 py-1 rounded-full border border-white/20 shadow-lg">
+                                ⭐ Klasik
+                            </div>
+                        </div>
+
+                        {{-- Book 4: Plato - Top Center (Melayang di atas) --}}
+                        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-[160px] md:w-[180px] group cursor-pointer transition-all duration-500 hover:z-30 hover:-translate-y-6 z-15 rotate-[12deg] hover:rotate-0"
+                             style="filter: drop-shadow(0 15px 12px rgba(0,0,0,0.4));">
+                            <div class="relative rounded-[20px] overflow-hidden aspect-[3/4]">
+                                <img src="https://images.unsplash.com/photo-1544716278-e513176f20b5?w=400&h=533&fit=crop" 
+                                     alt="The Republic"
+                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity"></div>
+                                <div class="absolute bottom-0 left-0 right-0 p-3">
+                                    <span class="inline-block text-[7px] font-black uppercase tracking-[0.15em] text-purple-300 bg-purple-500/30 px-2 py-0.5 rounded-full mb-1 backdrop-blur-sm">Metafisika</span>
+                                    <h4 class="text-white font-black text-[10px] leading-tight">The Republic</h4>
+                                    <p class="text-purple-300/70 text-[7px] font-semibold">Plato</p>
+                                </div>
+                            </div>
+                            <div class="absolute -top-2 -right-2 bg-purple-600/90 backdrop-blur-sm text-white text-[7px] font-black px-2 py-0.5 rounded-full border border-white/20 shadow-lg">
+                                Top Rated
+                            </div>
+                        </div>
+
+                        {{-- Decorative floating elements --}}
+                        <div class="absolute -z-10 w-full h-full">
+                            <div class="absolute top-1/4 left-1/4 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl animate-pulse"></div>
+                            <div class="absolute bottom-1/4 right-1/4 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+                        </div>
+                    </div>
+
+                    {{-- Decorative text behind books --}}
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none -z-5">
+                        <div class="text-center opacity-5">
+                            <i class="fas fa-book-open text-9xl"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
+
+    <!-- ══ 2. BENTO FEATURES SECTION ══ -->
+    <section id="fitur" class="py-32 relative">
+        <div class="max-w-[1600px] mx-auto px-6 lg:px-12">
+            <div class="text-center mb-20">
+                <h4 class="text-indigo-500 font-black uppercase tracking-[0.3em] text-[10px] mb-4">Core Capabilities</h4>
+                <h2 class="text-5xl lg:text-6xl font-black text-white">Teknologi <span class="italic text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Pintar</span>.</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
+                {{-- Bento 1: Large --}}
+                <div class="md:col-span-2 md:row-span-2 relative group rounded-[48px] overflow-hidden bg-white/3 border border-white/5 p-12 flex flex-col justify-end">
+                    <div class="absolute top-12 left-12 w-24 h-24 bg-indigo-600 rounded-[32px] flex items-center justify-center text-4xl shadow-2xl shadow-indigo-600/30 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-search-plus text-white"></i>
+                    </div>
+                    <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] group-hover:bg-indigo-500/20 transition-all"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-3xl font-black text-white mb-4">Smart Catalog Searching</h3>
+                        <p class="text-slate-400 max-w-md leading-relaxed">Cari jutaan judul dengan filter kategori yang intuitif. Temukan buku impian Anda dalam hitungan detik dengan alur pencarian yang dioptimalkan.</p>
+                    </div>
+                </div>
+
+                {{-- Bento 2: Square --}}
+                <div class="relative group rounded-[48px] overflow-hidden bg-gradient-to-br from-purple-600 to-indigo-700 p-10 flex flex-col justify-between">
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-xl text-white mb-6">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-white mb-3">Quick Borrow</h3>
+                        <p class="text-white/70 text-sm leading-relaxed">Ajukan peminjaman secara instan tanpa birokrasi yang rumit.</p>
+                    </div>
+                    <i class="fas fa-hand-holding-heart absolute -bottom-4 -right-4 text-white/5 text-9xl"></i>
+                </div>
+
+                {{-- Bento 3: Square --}}
+                <div class="relative group rounded-[48px] overflow-hidden bg-white/3 border border-white/5 p-10 flex flex-col justify-between">
+                    <div class="relative z-10 text-center flex flex-col items-center">
+                        <div class="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center text-3xl text-emerald-400 mb-6 group-hover:rotate-12 transition-transform">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <h3 class="text-xl font-black text-white mb-2 text-center">QRIS Ready</h3>
+                        <p class="text-slate-500 text-xs text-center">Bayar denda dengan aman melalui sistem QRIS terintegrasi.</p>
+                    </div>
+                </div>
+
+                {{-- Bento 4: Wide --}}
+                <div class="md:col-span-3 rounded-[40px] bg-white/3 border border-white/5 p-8 flex items-center justify-between group overflow-hidden relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    <div class="flex items-center gap-8">
+                        <div class="p-6 bg-white/5 rounded-3xl text-3xl text-indigo-400">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-white mb-1">Full Transaction Transparency</h3>
+                            <p class="text-slate-500 text-sm italic">Pantau seluruh riwayat peminjaman, pengembalian, dan status denda secara real-time.</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('riwayat') }}" class="hidden sm:flex px-8 py-4 bg-white/10 hover:bg-white/20 rounded-2xl text-xs font-black uppercase tracking-widest transition">Lihat Riwayat Sekarang</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ 3. SWIPER NEW ARRIVALS (GLASSMOPHISM) ══ -->
+    <section class="py-24 relative overflow-hidden">
+        <div class="max-w-[1600px] mx-auto px-6 lg:px-12 relative z-10">
+            <div class="flex flex-col md:flex-row items-end justify-between mb-16 gap-4">
+                <div>
+                    <h4 class="text-indigo-500 font-black uppercase tracking-[0.3em] text-[10px] mb-4">Latest Additions</h4>
+                    <h2 class="text-5xl font-black text-white">Koleksi <span class="text-indigo-500">Terbaru</span>.</h2>
+                </div>
+                <div class="flex gap-3">
+                    <button class="swiper-prev-new w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition shadow-2xl">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="swiper-next-new w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition shadow-2xl">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Swiper Container --}}
+            <div class="swiper new-arrivals-slider-premium !overflow-visible">
+                <div class="swiper-wrapper">
+                    @foreach($bukuTerbaru as $buku)
+                    <div class="swiper-slide !w-[320px] group">
+                        <div class="relative bg-white/5 border border-white/10 rounded-[48px] p-4 transition-all duration-500 group-hover:-translate-y-4 group-hover:border-indigo-500/30 group-hover:bg-white/10">
+                            <div class="aspect-[3/4] relative rounded-[36px] overflow-hidden mb-6 shadow-2xl">
+                                @if($buku->cover_buku)
+                                    <img src="{{ Storage::url($buku->cover_buku) }}" alt="{{ $buku->judul }}" 
+                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                                @else
+                                    <div class="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col items-center justify-center text-slate-700">
+                                        <i class="fas fa-book-open text-6xl"></i>
+                                    </div>
+                                @endif
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-8">
+                                    <a href="{{ route('katalog.show', $buku->id_buku) }}" 
+                                       class="w-full py-4 bg-white text-black font-black text-xs rounded-2xl hover:bg-indigo-600 hover:text-white transition">Lihat Detail</a>
+                                </div>
+                            </div>
+                            <div class="px-4 pb-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <p class="text-[10px] font-black uppercase tracking-widest text-indigo-400">{{ $buku->kategori->nama_kategori ?? 'Umum' }}</p>
+                                    @if($buku->averageRating > 0)
+                                    <div class="flex items-center gap-1 text-amber-400 text-[10px] font-black">
+                                        <i class="fas fa-star"></i>
+                                        <span>{{ number_format($buku->averageRating, 1) }}</span>
+                                    </div>
+                                    @endif
+                                </div>
+                                <h4 class="text-white font-black text-lg truncate mb-1">{{ $buku->judul }}</h4>
+                                <p class="text-slate-500 text-xs font-bold">{{ $buku->pengarang }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ 4. MODERN STEPS SECTION ══ -->
+    <section class="py-32 border-t border-white/5 relative">
+        <div class="max-w-[1600px] mx-auto px-6 lg:px-12">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="space-y-12">
+                    <div>
+                        <h4 class="text-indigo-500 font-black uppercase tracking-[0.3em] text-[10px] mb-4">Onboarding</h4>
+                        <h2 class="text-5xl font-black text-white">Segalanya Kini <br> Jadi Lebih <span class="text-indigo-500 italic">Simpel</span>.</h2>
+                    </div>
+
+                    <div class="space-y-8">
+                        @php
+                            $steps = [
+                                ['icon' => 'fas fa-search', 'title' => 'Temukan Buku', 'desc' => 'Gunakan fitur pencarian pintar untuk menemukan buku berdasarkan genre atau penulis.'],
+                                ['icon' => 'fas fa-paper-plane', 'title' => 'Ajukan Pinjam', 'desc' => 'Satu klik untuk mengajukan peminjaman. Tunggu persetujuan petugas dalam hitungan menit.'],
+                                ['icon' => 'fas fa-book-reader', 'title' => 'Nikmati Bacaan', 'desc' => 'Buku siap dipinjam! Nikmati konten berkualitas di mana saja.'],
+                            ];
+                        @endphp
+                        @foreach($steps as $i => $step)
+                        <div class="flex gap-6 group">
+                            <div class="w-16 h-16 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center text-2xl text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
+                                <i class="{{ $step['icon'] }}"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-black text-lg mb-2">{{ $step['title'] }}</h4>
+                                <p class="text-slate-500 text-sm leading-relaxed max-w-sm">{{ $step['desc'] }}</p>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Visualization --}}
+                <div class="relative bg-white/3 border border-white/5 rounded-[60px] p-12 overflow-hidden aspect-video flex items-center justify-center">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-purple-500/10"></div>
+                    <div class="relative z-10 text-center">
+                        <div class="w-32 h-32 bg-indigo-600 rounded-[40px] shadow-2xl shadow-indigo-600/40 flex items-center justify-center text-5xl text-white mb-8 mx-auto animate-bounce-slow">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-white">Ready for Reading?</h3>
+                        <p class="text-slate-500 text-sm mt-4 italic">Alur proses yang telah kami optimasi 10x lebih cepat.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ 5. FINAL CTA ══ -->
+    <section class="py-32 relative">
+        <div class="max-w-[1600px] mx-auto px-6 lg:px-12">
+            <div class="relative px-8 py-24 rounded-[64px] bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 overflow-hidden text-center">
+                <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-white/5 rounded-full blur-[100px] -mr-[300px] -mt-[300px]"></div>
+                <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-black/20 rounded-full blur-[100px] -ml-[300px] -mb-[300px]"></div>
+                
+                <h2 class="text-5xl lg:text-7xl font-black text-white mb-8 relative z-10 leading-tight">Mulai Perjalanan <br> Literasi Anda.</h2>
+                <div class="flex justify-center gap-6 relative z-10">
+                    <a href="{{ route('katalog') }}" 
+                       class="px-12 py-6 bg-white text-black font-black rounded-3xl shadow-2xl hover:bg-slate-100 transition transform hover:-translate-y-1">
+                        Akses Katalog Sekarang
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const swiper = new Swiper('.new-arrivals-slider-premium', {
+            slidesPerView: 'auto',
+            spaceBetween: 40,
+            freeMode: true,
+            grabCursor: true,
+            navigation: {
+                nextEl: '.swiper-next-new',
+                prevEl: '.swiper-prev-new',
+            },
+            autoplay: {
+                delay: 3500,
+                disableOnInteraction: false,
+            },
+        });
+    });
+</script>
+@endpush

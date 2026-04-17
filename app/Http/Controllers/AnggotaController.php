@@ -76,6 +76,7 @@ class AnggotaController extends Controller
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
                 'role' => 'anggota',
+                'status' => $validated['status'],
             ]);
 
             $validated['user_id'] = $user->id;
@@ -144,6 +145,7 @@ class AnggotaController extends Controller
             $user->name = $validated['nama'];
             $user->username = $validated['username'];
             $user->email = $validated['email'];
+            $user->status = $validated['status'];
 
             if (!empty($validated['password'])) {
                 $user->password = Hash::make($validated['password']);

@@ -1,390 +1,361 @@
 @extends('layouts.petugas')
 
-@section('title', 'Laporan Operasional Perpustakaan')
+@section('title', 'Intelligence Report — Perpustakaan Digital')
 @section('page-title', 'Laporan Operasional')
+@section('page-subtitle', 'Analisis data & performa perpustakaan')
 
 @section('content')
-    <div class="space-y-6">
+<div class="space-y-8 animate-fade-in pb-10">
 
-        <!-- HEADER & AKSI -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <div>
-                <h2 class="text-2xl font-bold text-white">Laporan Operasional Perpustakaan</h2>
-                <p class="text-slate-400 text-sm">Analisis kinerja periode: <strong
-                        class="text-indigo-400">{{ $namaBulan }} {{ $tahun }}</strong></p>
+    <!-- ══ HEADER & ACTION BENTO ══ -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="lg:col-span-3 bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-[48px] p-10 border border-white/5 shadow-2xl relative overflow-hidden flex flex-col justify-center">
+            <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] -mr-40 -mt-40"></div>
+            <div class="relative z-10">
+                <h2 class="text-4xl lg:text-5xl font-black text-white leading-none mb-3">
+                    Laporan <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Analitik</span>
+                </h2>
+                <p class="text-slate-400 font-medium max-w-xl">
+                    Rekapitulasi data operasional untuk periode <span class="text-indigo-400 font-bold">{{ $namaBulan }} {{ $tahun }}</span>. 
+                    Seluruh data telah disinkronkan secara real-time.
+                </p>
             </div>
-            <div class="flex gap-2">
-                <!-- Tombol Cetak Laporan (Print Browser) -->
-                <button onclick="window.print()"
-                    class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold rounded-lg shadow flex items-center gap-2 transition print:hidden">
-                    <i class="fas fa-print"></i> Cetak Laporan
+            
+            <div class="flex flex-wrap gap-4 mt-8 relative z-10">
+                <button onclick="window.print()" class="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition flex items-center gap-3 print:hidden">
+                    <i class="fas fa-print opacity-50"></i> Export PDF
                 </button>
-                <a href="{{ route('petugas.laporan.index') }}"
-                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow flex items-center gap-2 transition">
-                    <i class="fas fa-sync-alt"></i> Refresh Data
-                </a>
-            </div>
-        </div>
-
-        <!-- FILTER BULAN -->
-        <div
-            class="bg-[#1e293b] p-4 rounded-xl border border-slate-700/50 shadow-lg flex flex-wrap gap-4 items-end print:hidden">
-            <form action="{{ route('petugas.laporan.index') }}" method="GET" class="flex flex-wrap gap-4 w-full">
-                <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Bulan</label>
-                    <select name="bulan" onchange="this.form.submit()"
-                        class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 outline-none">
+                <div class="h-10 w-px bg-white/5 mx-2 hidden md:block"></div>
+                <form action="{{ route('petugas.laporan.index') }}" method="GET" class="flex items-center gap-3 print:hidden">
+                    <select name="bulan" onchange="this.form.submit()" class="bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold text-white outline-none focus:border-indigo-500">
                         @for ($m = 1; $m <= 12; $m++)
-                            <option value="{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}"
-                                {{ $bulan == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>
+                            <option value="{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}" {{ $bulan == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>
                                 {{ \Carbon\Carbon::create()->month($m)->format('F') }}
                             </option>
                         @endfor
                     </select>
-                </div>
-                <div class="flex-1 min-w-[150px]">
-                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Tahun</label>
-                    <select name="tahun" onchange="this.form.submit()"
-                        class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white focus:border-indigo-500 outline-none">
+                    <select name="tahun" onchange="this.form.submit()" class="bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold text-white outline-none focus:border-indigo-500">
                         @for ($y = date('Y'); $y >= date('Y') - 5; $y--)
-                            <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}
-                            </option>
+                            <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
                         @endfor
                     </select>
-                </div>
-            </form>
-        </div>
-
-        <!-- KARTU STATISTIK UTAMA (KPI) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Total Peminjaman -->
-            <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-700/50 shadow-xl relative overflow-hidden group">
-                <div
-                    class="absolute right-0 top-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-indigo-500/20 transition">
-                </div>
-                <div class="relative z-10">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Peminjaman</p>
-                            <h3 class="text-3xl font-bold text-white mt-1">{{ number_format($totalPinjam) }}</h3>
-                        </div>
-                        <div class="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-400">
-                            <i class="fas fa-book-reader text-lg"></i>
-                        </div>
-                    </div>
-                    <div class="text-xs mt-2">
-                        @if ($trenStatus == 'Naik')
-                            <span class="text-emerald-400 font-bold"><i class="fas fa-arrow-up"></i>
-                                {{ number_format(abs($trenPersen), 1) }}%</span>
-                        @else
-                            <span class="text-red-400 font-bold"><i class="fas fa-arrow-down"></i>
-                                {{ number_format(abs($trenPersen), 1) }}%</span>
-                        @endif
-                        <span class="text-slate-500 ml-1">dari bulan lalu</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Total Pengembalian -->
-            <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-700/50 shadow-xl relative overflow-hidden group">
-                <div
-                    class="absolute right-0 top-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-emerald-500/20 transition">
-                </div>
-                <div class="relative z-10">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Pengembalian</p>
-                            <h3 class="text-3xl font-bold text-white mt-1">{{ number_format($totalKembali) }}</h3>
-                        </div>
-                        <div
-                            class="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-400">
-                            <i class="fas fa-undo text-lg"></i>
-                        </div>
-                    </div>
-                    <div class="text-xs mt-2">
-                        <span class="text-slate-400">Tingkat Kepatuhan:</span>
-                        <span class="text-emerald-400 font-bold">{{ number_format($persenKepatuhan, 1) }}%</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pendapatan Denda -->
-            <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-700/50 shadow-xl relative overflow-hidden group">
-                <div
-                    class="absolute right-0 top-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-amber-500/20 transition">
-                </div>
-                <div class="relative z-10">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Pendapatan Denda</p>
-                            <h3 class="text-2xl font-bold text-amber-400 mt-1">Rp
-                                {{ number_format($totalDendaDiterima, 0, ',', '.') }}</h3>
-                        </div>
-                        <div class="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center text-amber-400">
-                            <i class="fas fa-coins text-lg"></i>
-                        </div>
-                    </div>
-                    <div class="text-xs mt-2">
-                        <span class="text-red-400 font-bold">Piutang: Rp
-                            {{ number_format($totalPiutang, 0, ',', '.') }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Anggota Baru -->
-            <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-700/50 shadow-xl relative overflow-hidden group">
-                <div
-                    class="absolute right-0 top-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-purple-500/20 transition">
-                </div>
-                <div class="relative z-10">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Anggota Baru</p>
-                            <h3 class="text-3xl font-bold text-white mt-1">{{ number_format($anggotaBaru) }}</h3>
-                        </div>
-                        <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-400">
-                            <i class="fas fa-user-plus text-lg"></i>
-                        </div>
-                    </div>
-                    <div class="text-xs mt-2">
-                        <span class="text-slate-400">Total Aktif:</span>
-                        <span class="text-white font-bold">{{ number_format($anggotaAktif) }}</span>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
 
-        <!-- GRAFIK & TABEL POPULER -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Grafik Harian (2 Kolom) -->
-            <div class="lg:col-span-2 bg-[#1e293b] p-6 rounded-2xl border border-slate-700/50 shadow-xl">
-                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <i class="fas fa-chart-line text-indigo-400"></i> Grafik Peminjaman Harian
-                </h3>
-                <div class="relative h-64 w-full">
-                    <canvas id="dailyChart"></canvas>
+        {{-- OFFICER QUICK PROFILE CARD --}}
+        <div class="lg:col-span-1 bg-indigo-600 rounded-[48px] p-8 text-white relative overflow-hidden group border border-white/10 shadow-2xl shadow-indigo-600/20">
+            <div class="absolute -bottom-8 -left-8 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+            <div class="relative z-10 flex flex-col h-full justify-between">
+                <div>
+                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-2xl font-black mb-6">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                    <h4 class="text-xs font-black uppercase tracking-[0.2em] text-white/60 mb-1">Generated By</h4>
+                    <h3 class="text-xl font-bold leading-tight">{{ $petugasStats['nama'] }}</h3>
+                    <p class="text-[10px] text-white/50 font-bold uppercase mt-1">Petugas sejak {{ $petugasStats['since'] }}</p>
                 </div>
-            </div>
-
-            <!-- Top Buku (1 Kolom) -->
-            <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-700/50 shadow-xl">
-                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <i class="fas fa-crown text-amber-400"></i> 5 Buku Terpopuler
-                </h3>
-                <div class="space-y-4">
-                    @forelse($bukuPopuler as $index => $item)
-                        <div class="flex items-center gap-3 pb-3 border-b border-slate-700/50 last:border-0">
-                            <div
-                                class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white">
-                                {{ $index + 1 }}
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm font-medium text-white truncate">
-                                    {{ $item->buku->judul ?? 'Buku Dihapus' }}</div>
-                                <div class="text-xs text-slate-500 truncate">
-                                    {{ $item->buku->kategori->nama_kategori ?? '-' }}</div>
-                            </div>
-                            <div class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded">
-                                {{ $item->total }}x
-                            </div>
-                        </div>
-                    @empty
-                        <p class="text-slate-500 text-sm text-center py-4">Belum ada data peminjaman.</p>
-                    @endforelse
+                
+                <div class="mt-8 pt-6 border-t border-white/10">
+                    <div class="text-3xl font-black mb-1">{{ $petugasStats['total_proses'] }}</div>
+                    <div class="text-[9px] font-black uppercase tracking-widest text-indigo-200">Transaksi Diproses (Bulan Ini)</div>
                 </div>
-            </div>
-        </div>
-
-        <!-- TABEL RINCIAN TRANSAKSI (LAMPIRAN) -->
-        <div class="bg-[#1e293b] rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden">
-            <div class="p-6 border-b border-slate-700/50">
-                <h3 class="text-lg font-bold text-white">Rincian Transaksi Periode Ini</h3>
-                <p class="text-xs text-slate-400 mt-1">Daftar seluruh peminjaman yang terjadi antara
-                    {{ $startDate->format('d M Y') }} s/d {{ $endDate->format('d M Y') }}</p>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead class="bg-slate-800/50 text-xs uppercase text-slate-400">
-                        <tr>
-                            <th class="px-6 py-3 font-semibold">Tanggal</th>
-                            <th class="px-6 py-3 font-semibold">Anggota</th>
-                            <th class="px-6 py-3 font-semibold">Buku</th>
-                            <th class="px-6 py-3 font-semibold text-center">Status</th>
-                            <th class="px-6 py-3 font-semibold text-right">Denda</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-700/50 text-slate-300">
-                        @forelse($transaksiDetail as $t)
-                            <tr class="hover:bg-slate-800/30 transition">
-                                <td class="px-6 py-3 whitespace-nowrap">
-                                    <div class="text-white">{{ $t->tanggal_pinjam->format('d M Y') }}</div>
-                                    @if ($t->tanggal_kembali_realisasi)
-                                        <div class="text-xs text-slate-500">Kembali:
-                                            {{ $t->tanggal_kembali_realisasi->format('d M Y') }}</div>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-3">
-                                    <div class="font-medium text-white">{{ $t->anggota->nama ?? '-' }}</div>
-                                    <div class="text-xs text-slate-500">{{ $t->anggota->nis_nisn ?? '-' }}</div>
-                                </td>
-                                <td class="px-6 py-3">
-                                    <div class="text-white truncate max-w-xs">{{ $t->buku->judul ?? '-' }}</div>
-                                </td>
-                                <td class="px-6 py-3 text-center">
-                                    @if ($t->status_peminjaman == 'dikembalikan')
-                                        <span
-                                            class="px-2 py-1 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Kembali</span>
-                                    @elseif($t->status_peminjaman == 'dipinjam')
-                                        <span
-                                            class="px-2 py-1 rounded text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Dipinjam</span>
-                                    @else
-                                        <span
-                                            class="px-2 py-1 rounded text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">{{ ucfirst($t->status_peminjaman) }}</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-3 text-right font-mono">
-                                    @php
-                                        $denda = 0;
-                                        // Cek apakah relasi denda ada dan merupakan koleksi
-                                        if ($t->denda && !$t->denda->isEmpty()) {
-                                            // Ambil denda yang sudah ada status pembayarannya (lunas/belum_lunas)
-                                            $dendaItem = $t->denda->firstWhere('status_pembayaran', '!=', null);
-                                            if ($dendaItem) {
-                                                $denda = $dendaItem->jumlah_denda;
-                                            }
-                                        }
-                                    @endphp
-                                    @if ($denda > 0)
-                                        <div class="text-red-400">Rp {{ number_format($denda, 0, ',', '.') }}</div>
-                                    @else
-                                        <span class="text-slate-600">-</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-8 text-center text-slate-500">Tidak ada transaksi pada
-                                    periode ini.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
 
-    <!-- Script Chart.js -->
-    @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            const ctx = document.getElementById('dailyChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: {!! json_encode($labelsGrafik) !!},
-                    datasets: [{
-                        label: 'Jumlah Peminjaman',
-                        data: {!! json_encode($grafikData) !!},
-                        backgroundColor: '#6366f1',
-                        borderRadius: 4,
-                        barPercentage: 0.6
-                    }]
+    <!-- ══ BENTO GRID STATS ══ -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-[160px]">
+        
+        {{-- Large Stats: Peminjaman --}}
+        <div class="md:col-span-2 md:row-span-2 bg-[#1e293b] rounded-[48px] p-10 border border-white/5 shadow-xl relative overflow-hidden flex flex-col justify-between group">
+            <div class="absolute top-0 right-0 w-[300px] h-[300px] bg-indigo-600/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-indigo-600/10 transition"></div>
+            <div class="relative z-10">
+                <div class="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 mb-6">
+                    <i class="fas fa-book-reader"></i>
+                </div>
+                <h4 class="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Total Volume Pinjaman</h4>
+                <div class="flex items-end gap-4">
+                    <span class="text-6xl font-black text-white leading-none">{{ number_format($totalPinjam) }}</span>
+                    <div class="mb-1">
+                        @if ($trenStatus == 'Naik')
+                            <span class="text-emerald-400 font-black text-xs flex items-center gap-1">
+                                <i class="fas fa-caret-up"></i> {{ number_format(abs($trenPersen), 1) }}%
+                            </span>
+                        @else
+                            <span class="text-rose-400 font-black text-xs flex items-center gap-1">
+                                <i class="fas fa-caret-down"></i> {{ number_format(abs($trenPersen), 1) }}%
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <div class="relative z-10 pt-6 border-t border-white/5 flex gap-10">
+                <div>
+                    <div class="text-white font-black text-xl">{{ number_format($totalKembali) }}</div>
+                    <div class="text-[9px] text-slate-500 font-bold uppercase">Sudah Kembali</div>
+                </div>
+                <div>
+                    <div class="text-indigo-400 font-black text-xl">{{ number_format($persenKepatuhan, 1) }}%</div>
+                    <div class="text-[9px] text-slate-500 font-bold uppercase">Rate Tepat Waktu</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Medium Stats: Denda --}}
+        <div class="md:col-span-2 bg-[#1e293b] rounded-[40px] p-8 border border-white/5 shadow-xl flex items-center gap-8 group">
+            <div class="p-6 bg-amber-500/10 rounded-3xl text-3xl text-amber-500 group-hover:rotate-12 transition">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div>
+                <h4 class="text-slate-500 text-[9px] font-black uppercase tracking-widest mb-1">Total Denda Diterima</h4>
+                <div class="text-3xl font-black text-white">Rp {{ number_format($totalDendaDiterima, 0, ',', '.') }}</div>
+                <div class="text-[10px] text-slate-500 mt-1">Sisa Piutang: <span class="text-rose-400 font-bold">Rp {{ number_format($totalPiutang, 0, ',', '.') }}</span></div>
+            </div>
+        </div>
+
+        {{-- Small Stats: Anggota --}}
+        <div class="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-[40px] p-8 shadow-xl flex flex-col justify-between">
+            <div class="text-white/60 text-[9px] font-black uppercase tracking-widest">Anggota Baru</div>
+            <div class="flex items-center justify-between">
+                <span class="text-4xl font-black text-white">{{ number_format($anggotaBaru) }}</span>
+                <i class="fas fa-user-plus text-white/20 text-2xl"></i>
+            </div>
+        </div>
+
+        {{-- Small Stats: Terlambat --}}
+        <div class="bg-[#1e293b] rounded-[40px] p-8 border border-white/5 shadow-xl flex flex-col justify-between group">
+            <div class="text-slate-500 text-[9px] font-black uppercase tracking-widest">Data Terlambat</div>
+            <div class="flex items-center justify-between">
+                <span class="text-4xl font-black text-rose-500 group-hover:scale-110 transition">{{ number_format($totalTerlambat) }}</span>
+                <div class="text-[9px] font-bold text-slate-600 uppercase text-right leading-tight">Buku Masih<br>Bermasalah</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-[#1e293b] rounded-[32px] p-6 border border-white/5 shadow-xl">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2">Kasus Buku Rusak</div>
+            <div class="text-4xl font-black text-amber-400">{{ number_format($kasusBukuRusak) }}</div>
+            <div class="text-xs text-slate-500 mt-2">Denda standar Rp 50.000 per kasus.</div>
+        </div>
+        <div class="bg-[#1e293b] rounded-[32px] p-6 border border-white/5 shadow-xl">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2">Kasus Buku Hilang</div>
+            <div class="text-4xl font-black text-rose-400">{{ number_format($kasusBukuHilang) }}</div>
+            <div class="text-xs text-slate-500 mt-2">Nominal mengikuti harga ganti buku.</div>
+        </div>
+        <div class="bg-[#1e293b] rounded-[32px] p-6 border border-white/5 shadow-xl">
+            <div class="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2">Kerugian Inventaris</div>
+            <div class="text-3xl font-black text-white">Rp {{ number_format($totalKerugianInventaris, 0, ',', '.') }}</div>
+            <div class="text-xs text-slate-500 mt-2">Akumulasi rusak, hilang, dan denda gabungan.</div>
+        </div>
+    </div>
+
+    <!-- ══ ANALYTICS DEPTH ══ -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Daily Traffic Chart -->
+        <div class="lg:col-span-2 bg-[#1e293b] rounded-[48px] p-10 border border-white/5 shadow-2xl">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h3 class="text-xl font-black text-white">Volume Peminjaman</h3>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 italic">Daily Activity Tracker</p>
+                </div>
+                <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+            <div class="relative h-72 w-full">
+                <canvas id="dailyChartPremium"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Performer Bento -->
+        <div class="bg-[#1e293b] rounded-[48px] p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
+            <div class="absolute inset-0 bg-indigo-600/[0.02] pointer-events-none"></div>
+            <h3 class="text-xl font-black text-white mb-8">Top Performer</h3>
+            
+            <div class="space-y-6">
+                @forelse($bukuPopuler as $index => $item)
+                    <div class="flex items-center gap-4 group/item">
+                        <span class="text-xs font-black text-slate-600 tabular-nums border-b-2 border-transparent group-hover/item:border-indigo-500 transition-all">{{ str_pad($index+1, 2, '0', STR_PAD_LEFT) }}</span>
+                        <div class="flex-1 min-w-0">
+                            <h5 class="text-sm font-bold text-white truncate group-hover/item:text-indigo-400 transition">{{ $item->buku->judul ?? 'Buku Dihapus' }}</h5>
+                            <p class="text-[10px] text-slate-500 font-medium italic">{{ $item->buku->kategori->nama_kategori ?? '-' }}</p>
+                        </div>
+                        <div class="px-3 py-1 bg-white/5 rounded-lg text-[10px] font-black text-indigo-400">{{ $item->total }}x</div>
+                    </div>
+                @empty
+                    <div class="py-20 text-center">
+                        <i class="fas fa-ghost text-4xl text-slate-800 mb-4"></i>
+                        <p class="text-xs text-slate-600 font-bold uppercase tracking-widest">No Data Recorded</p>
+                    </div>
+                @endforelse
+            </div>
+
+            <div class="mt-10 pt-6 border-t border-white/5 text-center">
+                <a href="{{ route('petugas.buku.index') }}" class="text-[10px] font-black text-indigo-500 uppercase tracking-widest hover:text-indigo-400 transition">Lihat Katalog Lengkap →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ TRANSACTION LOGS ══ -->
+    <div class="bg-[#1e293b] rounded-[56px] border border-white/5 shadow-2xl overflow-hidden">
+        <div class="px-12 py-10 border-b border-white/5 flex items-center justify-between">
+            <div>
+                <h3 class="text-2xl font-black text-white">Log Transaksi</h3>
+                <p class="text-xs text-slate-500 mt-1">Audit trail seluruh aktifitas peminjaman periode ini.</p>
+            </div>
+            <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-500">
+                <i class="fas fa-list-check"></i>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-white/[0.02] text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        <th class="px-12 py-6">Timestamp & ID</th>
+                        <th class="px-12 py-6">Entitas Peminjam</th>
+                        <th class="px-8 py-6">Judul Literatur</th>
+                        <th class="px-8 py-6 text-center">Status Alur</th>
+                        <th class="px-8 py-6 text-center">Kondisi Buku</th>
+                        <th class="px-12 py-6 text-right">Amortisasi Denda</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    @forelse($transaksiDetail as $t)
+                        <tr class="hover:bg-white/[0.03] transition-colors group">
+                            <td class="px-12 py-6">
+                                <div class="text-sm font-bold text-white mb-1">#{{ str_pad($t->id_peminjaman, 5, '0', STR_PAD_LEFT) }}</div>
+                                <div class="text-[10px] text-slate-500 font-bold tabular-nums">{{ $t->tanggal_pinjam->format('d/m/Y') }}</div>
+                            </td>
+                            <td class="px-12 py-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-[10px] font-black text-indigo-400">
+                                        {{ strtoupper(substr($t->anggota->nama ?? '?', 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold text-white">{{ $t->anggota->nama ?? '-' }}</div>
+                                        <div class="text-[9px] text-slate-500 font-mono tracking-tighter">{{ $t->anggota->nis_nisn ?? '-' }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-8 py-6">
+                                <div class="text-sm text-slate-400 max-w-xs truncate italic group-hover:text-indigo-300 transition-colors">"{{ $t->buku->judul ?? '-' }}"</div>
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                @if ($t->status_peminjaman == 'dikembalikan')
+                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Cleared</span>
+                                @elseif($t->status_peminjaman == 'dipinjam')
+                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20">Active</span>
+                                @else
+                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-indigo-600/10 text-indigo-400 border border-indigo-600/20 uppercase">{{ $t->status_peminjaman }}</span>
+                                @endif
+                            </td>
+                            <td class="px-8 py-6 text-center">
+                                @if ($t->kondisi_pengembalian === 'rusak')
+                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20">Rusak</span>
+                                @elseif ($t->kondisi_pengembalian === 'hilang')
+                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border border-rose-500/20">Hilang</span>
+                                @elseif ($t->kondisi_pengembalian === 'baik')
+                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Baik</span>
+                                @else
+                                    <span class="text-slate-700">—</span>
+                                @endif
+                            </td>
+                            <td class="px-12 py-6 text-right">
+                                @php $d = $t->denda->first(); @endphp
+                                @if ($d && $d->jumlah_denda > 0)
+                                    <div class="text-sm font-black text-rose-500">Rp {{ number_format($d->jumlah_denda, 0, ',', '.') }}</div>
+                                    <div class="text-[8px] font-black uppercase tracking-tighter text-indigo-400">{{ $d->label_jenis_denda }}</div>
+                                    <div class="text-[8px] font-black uppercase tracking-tighter {{ $d->status_pembayaran == 'lunas' ? 'text-emerald-400' : 'text-slate-600' }}">{{ $d->status_pembayaran }}</div>
+                                @else
+                                    <span class="text-slate-700">—</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-12 py-20 text-center">
+                                <p class="text-slate-600 text-xs font-black uppercase tracking-widest italic">No transactions found in this period cycle.</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('dailyChartPremium').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+        gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($labelsGrafik) !!},
+                datasets: [{
+                    label: 'Peminjaman',
+                    data: {!! json_encode($grafikData) !!},
+                    borderColor: '#6366f1',
+                    borderWidth: 4,
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: '#0b1120',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    backgroundColor: gradient,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        titleFont: { size: 12, weight: 'bold' },
+                        bodyFont: { size: 12 },
+                        padding: 12,
+                        cornerRadius: 12,
+                        displayColors: false
+                    }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
+                        ticks: { color: '#64748b', font: { size: 10, weight: 'bold' }, padding: 10 }
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: '#334155'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
-                        }
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#64748b', font: { size: 10, weight: 'bold' }, padding: 10 }
                     }
                 }
-            });
-        </script>
-    @endpush
-
-    <style>
-        @media print {
-            body * {
-                visibility: hidden;
             }
+        });
+    });
+</script>
+@endpush
 
-            .space-y-6,
-            .space-y-6 * {
-                visibility: visible;
-            }
-
-            .space-y-6 {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
-
-            button,
-            select,
-            form,
-            .print-hidden {
-                display: none !important;
-            }
-
-            .bg-\[#1e293b\] {
-                background-color: #fff !important;
-                color: #000 !important;
-                border: 1px solid #ddd !important;
-                box-shadow: none !important;
-            }
-
-            .text-white,
-            h2,
-            h3,
-            div,
-            span,
-            p,
-            td,
-            th {
-                color: #000 !important;
-            }
-
-            .text-slate-400,
-            .text-slate-500,
-            .text-slate-300 {
-                color: #555 !important;
-            }
-
-            .border-slate-700\/50 {
-                border-color: #ddd !important;
-            }
-
-            /* Force table to look good on print */
-            table {
-                width: 100%;
-                font-size: 10pt;
-            }
-
-            th {
-                background-color: #eee !important;
-                color: #000 !important;
-            }
-        }
-    </style>
+<style>
+    @media print {
+        body * { visibility: hidden; }
+        .animate-fade-in, .animate-fade-in * { visibility: visible; }
+        .animate-fade-in { position: absolute; left: 0; top: 0; width: 100%; }
+        .print-hidden, button, form { display: none !important; }
+        .bg-[#1e293b], .bg-indigo-600 { background: #fff !important; color: #000 !important; border: 1px solid #eee !important; box-shadow: none !important; }
+        .text-white, h2, h3, h4, h5, span, p, td, th { color: #000 !important; }
+        .rounded-[48px], .rounded-[56px] { border-radius: 12px !important; }
+    }
+</style>
 @endsection

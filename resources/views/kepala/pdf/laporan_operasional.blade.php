@@ -96,6 +96,21 @@
         </div>
     </div>
 
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-val">{{ $kasusBukuRusak }}</span>
+            <span class="stat-desc">Kasus Buku Rusak</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-val">{{ $kasusBukuHilang }}</span>
+            <span class="stat-desc">Kasus Buku Hilang</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-val">Rp {{ number_format($kerugianInventaris, 0, ',', '.') }}</span>
+            <span class="stat-desc">Kerugian Inventaris</span>
+        </div>
+    </div>
+
     <!-- 1. ANALISIS KATEGORI BUKU -->
     <h3 style="border-bottom: 2px solid #000; padding-bottom: 5px; margin-top: 25px;">I. MINAT BACA BERDASARKAN KATEGORI</h3>
     <table>
@@ -198,6 +213,18 @@
             <tr style="background-color: #f0f0f0;">
                 <td class="text-bold">Buku Kembali Terlambat</td>
                 <td class="text-right">{{ $telat }} Buku</td>
+            </tr>
+            <tr>
+                <td class="text-bold">Kasus Buku Rusak</td>
+                <td class="text-right">{{ $kasusBukuRusak }} Buku</td>
+            </tr>
+            <tr>
+                <td class="text-bold">Kasus Buku Hilang</td>
+                <td class="text-right">{{ $kasusBukuHilang }} Buku</td>
+            </tr>
+            <tr>
+                <td class="text-bold">Kerugian Inventaris</td>
+                <td class="text-right">Rp {{ number_format($kerugianInventaris, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>

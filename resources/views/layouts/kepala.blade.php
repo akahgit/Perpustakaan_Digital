@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Dashboard Kepala - Perpustakaan Digital')</title>
+    <title>@yield('title', 'Dashboard Kepala — Perpustakan Digital')</title>
+    <meta name="description" content="Panel manajemen kepala perpustakaan digital.">
 
-    <!-- Fonts -->
+    <!-- Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
-    
-    <!-- Font Awesome -->
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
+
+    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Vite + Tailwind CSS v4 -->
@@ -23,146 +24,220 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        [x-cloak] { display: none !important; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-    </style>
-    
     @stack('styles')
 </head>
 
 <body class="bg-[#0b1120] text-slate-300 antialiased" x-data="{ sidebarOpen: false }">
 
+    <!-- ════════════════════════════════════════════
+         TOAST NOTIFICATION SYSTEM
+         ════════════════════════════════════════════ -->
+    @include('components.toast-notification')
+
     <div class="flex h-screen overflow-hidden">
 
-        <!-- SIDEBAR -->
+        <!-- ════════════════════════════════════════
+             SIDEBAR — KEPALA
+             ════════════════════════════════════════ -->
+        <!-- Mobile Overlay -->
+        <div x-show="sidebarOpen"
+             @click="sidebarOpen = false"
+             x-cloak
+             class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+        </div>
+
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-               class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] border-r border-slate-800 transition-transform duration-300 lg:static lg:translate-x-0 flex flex-col">
-            
+               class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] border-r border-white/5 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col">
+
             <!-- Logo -->
-            <div class="h-20 flex items-center px-6 border-b border-slate-800">
+            <div class="h-[72px] flex items-center px-5 border-b border-white/5 flex-shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <i class="fas fa-book-open text-white text-lg"></i>
-                    </div>
+                    <img src="{{ asset('asset/logo.jpeg') }}"
+                         alt="Logo Perpustakan Digital"
+                         class="w-9 h-9 rounded-xl object-cover shadow-lg shadow-slate-950/30 ring-1 ring-white/10 flex-shrink-0">
                     <div>
-                        <div class="font-bold text-white leading-tight">Perpustakaan</div>
-                        <div class="text-[10px] text-blue-400 font-semibold tracking-wider">KEPALA PERPUSTAKAAN</div>
+                        <div class="font-bold text-white text-sm leading-tight tracking-tight">Perpustakan Digital</div>
+                        <div class="text-[10px] text-blue-400/80 font-semibold tracking-widest uppercase">Kepala</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Menu Navigation -->
-            <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
-                
+            <!-- Nav Menu -->
+            <nav class="flex-1 overflow-y-auto py-5 px-3 space-y-0.5 scrollbar-dark">
+
                 <!-- Group: Menu Utama -->
-                <div class="mb-6">
-                    <div class="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Menu Utama</div>
-                    
-                    <a href="{{ route('kepala.dashboard') }}" 
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('kepala.dashboard') ? 'bg-blue-600/10 text-blue-400 border-r-2 border-blue-500' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} transition group">
-                        <i class="fas fa-th-large w-5 text-center"></i>
-                        <span class="font-medium">Dashboard</span>
+                <div class="mb-5">
+                    <div class="px-3 mb-2 text-[10px] font-bold text-slate-600 uppercase tracking-[0.15em]">Panel Analitik</div>
+
+                    <a href="{{ route('kepala.dashboard') }}"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
+                              {{ request()->routeIs('kepala.dashboard')
+                                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                                  : 'text-slate-400 hover:text-slate-100 hover:bg-white/5' }} group">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                                    {{ request()->routeIs('kepala.dashboard') ? 'bg-white/20' : 'bg-white/5 group-hover:bg-white/10' }} transition">
+                            <i class="fas fa-gauge-high text-sm {{ request()->routeIs('kepala.dashboard') ? 'text-white' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        </div>
+                        <span>Dashboard</span>
                     </a>
 
-                    <a href="{{ route('kepala.laporan') }}" 
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('kepala.laporan*') ? 'bg-blue-600/10 text-blue-400 border-r-2 border-blue-500' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} transition group">
-                        <i class="fas fa-file-alt w-5 text-center"></i>
-                        <span class="font-medium">Laporan</span>
+                    <a href="{{ route('kepala.laporan') }}"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
+                              {{ request()->routeIs('kepala.laporan*')
+                                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                                  : 'text-slate-400 hover:text-slate-100 hover:bg-white/5' }} group">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                                    {{ request()->routeIs('kepala.laporan*') ? 'bg-white/20' : 'bg-white/5 group-hover:bg-white/10' }} transition">
+                            <i class="fas fa-file-chart-column text-sm {{ request()->routeIs('kepala.laporan*') ? 'text-white' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        </div>
+                        <span>Laporan</span>
                     </a>
 
-                    <a href="{{ route('kepala.statistik') }}" 
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('kepala.statistik*') ? 'bg-blue-600/10 text-blue-400 border-r-2 border-blue-500' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }} transition group">
-                        <i class="fas fa-chart-bar w-5 text-center"></i>
-                        <span class="font-medium">Statistik</span>
+                    <a href="{{ route('kepala.statistik') }}"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
+                              {{ request()->routeIs('kepala.statistik*')
+                                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                                  : 'text-slate-400 hover:text-slate-100 hover:bg-white/5' }} group">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                                    {{ request()->routeIs('kepala.statistik*') ? 'bg-white/20' : 'bg-white/5 group-hover:bg-white/10' }} transition">
+                            <i class="fas fa-chart-line text-sm {{ request()->routeIs('kepala.statistik*') ? 'text-white' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        </div>
+                        <span>Statistik</span>
+                    </a>
+
+                    <a href="{{ route('kepala.aktivitas') }}"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
+                               {{ request()->routeIs('kepala.aktivitas*')
+                                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                                   : 'text-slate-400 hover:text-slate-100 hover:bg-white/5' }} group">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                                     {{ request()->routeIs('kepala.aktivitas*') ? 'bg-white/20' : 'bg-white/5 group-hover:bg-white/10' }} transition">
+                            <i class="fas fa-history text-sm {{ request()->routeIs('kepala.aktivitas*') ? 'text-white' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        </div>
+                        <span>Audit Aktivitas</span>
+                    </a>
+                </div>
+
+                <!-- Group: Manajemen -->
+                <div class="mb-5">
+                    <div class="px-3 mb-2 text-[10px] font-bold text-slate-600 uppercase tracking-[0.15em]">Manajemen</div>
+
+                    <a href="{{ route('kepala.petugas.index') }}"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
+                              {{ request()->routeIs('kepala.petugas*')
+                                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                                  : 'text-slate-400 hover:text-slate-100 hover:bg-white/5' }} group">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                                    {{ request()->routeIs('kepala.petugas*') ? 'bg-white/20' : 'bg-white/5 group-hover:bg-white/10' }} transition">
+                            <i class="fas fa-user-tie text-sm {{ request()->routeIs('kepala.petugas*') ? 'text-white' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        </div>
+                        <span>Daftar Petugas</span>
+                    </a>
+
+                    <a href="{{ route('kepala.profile') }}"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
+                              {{ request()->routeIs('kepala.profile*')
+                                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                                  : 'text-slate-400 hover:text-slate-100 hover:bg-white/5' }} group">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                                    {{ request()->routeIs('kepala.profile*') ? 'bg-white/20' : 'bg-white/5 group-hover:bg-white/10' }} transition">
+                            <i class="fas fa-user-shield text-sm {{ request()->routeIs('kepala.profile*') ? 'text-white' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        </div>
+                        <span>Profil & Keamanan</span>
                     </a>
                 </div>
             </nav>
 
-            <!-- User Profile (Bottom Sidebar) -->
-            <div class="p-4 border-t border-slate-800 bg-[#0f172a]">
-                <div class="flex items-center gap-3 p-2 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md">
-                        KP
+            <!-- User Profile (Bottom) -->
+            <div class="p-3 border-t border-white/5 flex-shrink-0">
+                <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white/3 border border-white/5 hover:bg-white/5 transition group relative">
+                    <a href="{{ route('kepala.profile') }}" class="absolute inset-0 z-0"></a>
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg flex-shrink-0 relative z-10">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</div>
-                        <div class="text-xs text-slate-400 truncate">Kepala Perpustakaan</div>
+                    <div class="flex-1 min-w-0 relative z-10">
+                        <div class="text-sm font-semibold text-white truncate leading-tight">{{ auth()->user()->name }}</div>
+                        <div class="text-[10px] text-slate-500 truncate">Kepala Perpustakaan</div>
                     </div>
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}" class="relative z-10">
                         @csrf
-                        <button type="submit" class="text-slate-400 hover:text-white transition p-1" title="Logout">
-                            <i class="fas fa-sign-out-alt"></i>
+                        <button type="submit"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition"
+                                title="Logout">
+                            <i class="fas fa-right-from-bracket text-sm"></i>
                         </button>
                     </form>
                 </div>
             </div>
         </aside>
 
-        <!-- MAIN CONTENT WRAPPER -->
+        <!-- ════════════════════════════════════════
+             MAIN CONTENT AREA
+             ════════════════════════════════════════ -->
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-            
-            <!-- TOP BAR (HEADER) -->
-            <header class="h-20 bg-[#0b1120] border-b border-slate-800 flex items-center justify-between px-6 lg:px-8 z-40">
-                <!-- Left: Title & Mobile Toggle -->
+
+            <!-- HEADER -->
+            <header class="h-[72px] bg-[#0b1120]/95 backdrop-blur-sm border-b border-white/5 flex items-center justify-between px-4 lg:px-6 z-30 flex-shrink-0">
+
                 <div class="flex items-center gap-4">
-                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-slate-400 hover:text-white">
-                        <i class="fas fa-bars text-xl"></i>
+                    <button @click="sidebarOpen = !sidebarOpen"
+                            class="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition">
+                        <i class="fas fa-bars text-base"></i>
                     </button>
-                    <h1 class="text-xl font-bold text-white hidden sm:block">@yield('page-title', 'Dashboard')</h1>
+                    <div class="hidden sm:block">
+                        <h1 class="text-base font-bold text-white leading-tight tracking-tight">@yield('page-title', 'Dashboard')</h1>
+                        <p class="text-xs text-slate-500 mt-0.5">@yield('page-subtitle', 'Perpustakan Digital')</p>
+                    </div>
                 </div>
 
-                <!-- Right: Search, Notif, Date -->
-                <div class="flex items-center gap-6">
-                    
-                    <!-- 1. SEARCH GLOBAL (AKTIF) -->
+                <div class="flex items-center gap-3 lg:gap-5">
+
+                    <!-- Search -->
                     <form action="{{ route('kepala.search') }}" method="GET" class="hidden md:block relative">
-                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari buku, anggota, atau transaksi..." 
-                               class="w-64 pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                        <input type="text" name="q" value="{{ request('q') }}"
+                               placeholder="Cari data..."
+                               class="w-52 lg:w-64 pl-9 pr-4 py-2 bg-white/5 border border-white/8 rounded-xl text-sm text-white placeholder-slate-500
+                                      focus:outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20 transition">
                         <button type="submit" class="absolute left-3 top-2.5 text-slate-500 hover:text-blue-400 transition">
-                            <i class="fas fa-search text-sm"></i>
+                            <i class="fas fa-magnifying-glass text-xs"></i>
                         </button>
                     </form>
 
-                    <!-- 2. NOTIFIKASI LONCENG (DINAMIS + DROPDOWN) -->
+                    <!-- Bell -->
                     <div class="relative" x-data="{ open: false }">
                         @php
-                            // Hitung Notifikasi Real-time (Sama seperti petugas)
-                            $notifMenunggu = \App\Models\Peminjaman::where('status_peminjaman', 'menunggu_konfirmasi')->count();
+                            $notifMenunggu  = \App\Models\Peminjaman::where('status_peminjaman', 'menunggu_konfirmasi')->count();
                             $notifTerlambat = \App\Models\Peminjaman::where('status_peminjaman', 'dipinjam')
                                                 ->where('tanggal_kembali_rencana', '<', \Carbon\Carbon::today())->count();
                             $totalNotif = $notifMenunggu + $notifTerlambat;
-                            
-                            // Ambil 5 notifikasi terbaru
-                            $notifList = \App\Models\Peminjaman::with(['anggota', 'buku'])
+                            $notifList  = \App\Models\Peminjaman::with(['anggota', 'buku'])
                                 ->whereIn('status_peminjaman', ['menunggu_konfirmasi', 'dipinjam'])
                                 ->where(function($q) {
                                     $q->where('status_peminjaman', 'menunggu_konfirmasi')
                                       ->orWhereRaw('tanggal_kembali_rencana < CURDATE()');
                                 })
                                 ->orderBy('created_at', 'desc')
-                                ->limit(5)
-                                ->get();
+                                ->limit(5)->get();
                         @endphp
 
-                        <!-- Tombol Lonceng -->
-                        <button @click="open = !open" @click.away="open = false" class="relative text-slate-400 hover:text-white transition focus:outline-none">
-                            <i class="fas fa-bell text-lg"></i>
+                        <button @click="open = !open"
+                                class="relative w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition">
+                            <i class="fas fa-bell text-base"></i>
                             @if($totalNotif > 0)
-                                <span class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-[#0b1120] animate-pulse">
-                                    {{ $totalNotif }}
+                                <span class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border-2 border-[#0b1120] animate-pulse">
+                                    {{ $totalNotif > 9 ? '9+' : $totalNotif }}
                                 </span>
                             @endif
                         </button>
 
-                        <!-- Dropdown Menu Notifikasi -->
-                        <div x-show="open" 
+                        <div x-show="open"
+                             @click.outside="open = false"
                              x-cloak
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 translate-y-2 scale-95"
@@ -170,82 +245,86 @@
                              x-transition:leave="transition ease-in duration-150"
                              x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                              x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                             class="absolute right-0 mt-3 w-80 bg-[#1e293b] border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
-                            
-                            <!-- Header Dropdown -->
-                            <div class="px-4 py-3 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                             class="absolute right-0 mt-2 w-80 bg-[#1a2744] border border-white/8 rounded-2xl shadow-2xl z-50 overflow-hidden">
+
+                            <div class="px-4 py-3 border-b border-white/5 flex items-center justify-between bg-white/2">
                                 <h4 class="text-sm font-bold text-white">Notifikasi</h4>
-                                <span class="text-xs text-blue-400 font-semibold">{{ $totalNotif }} Baru</span>
+                                @if($totalNotif > 0)
+                                    <span class="px-2 py-0.5 bg-rose-500/20 text-rose-400 text-xs font-bold rounded-full border border-rose-500/20">{{ $totalNotif }} baru</span>
+                                @endif
                             </div>
 
-                            <!-- List Notifikasi -->
-                            <div class="max-h-64 overflow-y-auto">
+                            <div class="max-h-72 overflow-y-auto scrollbar-dark">
                                 @forelse($notifList as $notif)
-                                    <a href="{{ $notif->status_peminjaman == 'menunggu_konfirmasi' ? route('petugas.peminjaman.index', ['status' => 'menunggu_konfirmasi']) : route('petugas.pengembalian.index') }}" 
-                                       class="block px-4 py-3 hover:bg-slate-800 transition border-b border-slate-700/50 last:border-0 group">
-                                        <div class="flex items-start gap-3">
-                                            <!-- Icon Status -->
-                                            <div class="mt-1 w-2 h-2 rounded-full flex-shrink-0 {{ $notif->status_peminjaman == 'menunggu_konfirmasi' ? 'bg-blue-500' : 'bg-red-500' }}"></div>
-                                            
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm text-slate-200 font-medium truncate group-hover:text-white">
-                                                    @if($notif->status_peminjaman == 'menunggu_konfirmasi')
-                                                        Pengajuan Baru: {{ $notif->anggota->nama ?? 'Anggota' }}
-                                                    @else
-                                                        Terlambat: {{ $notif->buku->judul ?? 'Buku' }}
-                                                    @endif
-                                                </p>
-                                                <p class="text-xs text-slate-500 truncate mt-0.5">
-                                                    {{ $notif->created_at->diffForHumans() }}
-                                                </p>
-                                            </div>
+                                    <a href="{{ $notif->status_peminjaman == 'menunggu_konfirmasi'
+                                        ? route('petugas.peminjaman.index', ['status' => 'menunggu_konfirmasi'])
+                                        : route('petugas.pengembalian.index') }}"
+                                       class="flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition border-b border-white/3 last:border-0 group">
+                                        <div class="mt-1 w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0
+                                                    {{ $notif->status_peminjaman == 'menunggu_konfirmasi' ? 'bg-blue-500/20' : 'bg-rose-500/20' }}">
+                                            <i class="text-xs {{ $notif->status_peminjaman == 'menunggu_konfirmasi' ? 'fas fa-hourglass-half text-blue-400' : 'fas fa-clock text-rose-400' }}"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs font-semibold text-slate-200 truncate">
+                                                @if($notif->status_peminjaman == 'menunggu_konfirmasi')
+                                                    Pengajuan: {{ $notif->anggota->nama ?? 'Anggota' }}
+                                                @else
+                                                    Terlambat: {{ Str::limit($notif->buku->judul ?? 'Buku', 30) }}
+                                                @endif
+                                            </p>
+                                            <p class="text-[10px] text-slate-500 mt-0.5">{{ $notif->created_at->diffForHumans() }}</p>
                                         </div>
                                     </a>
                                 @empty
-                                    <div class="px-4 py-8 text-center text-slate-500 text-sm">
-                                        <i class="fas fa-check-circle text-2xl mb-2 opacity-50"></i>
-                                        <p>Tidak ada notifikasi baru.</p>
+                                    <div class="px-4 py-10 text-center">
+                                        <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                            <i class="fas fa-check text-slate-500"></i>
+                                        </div>
+                                        <p class="text-sm text-slate-500">Semua beres!</p>
                                     </div>
                                 @endforelse
                             </div>
 
-                            <!-- Footer Dropdown -->
-                            <div class="px-4 py-2 bg-slate-800/50 border-t border-slate-700 text-center">
-                                <a href="{{ route('petugas.peminjaman.index') }}" class="text-xs text-blue-400 hover:text-blue-300 font-medium">Lihat Semua Aktivitas &rarr;</a>
+                            <div class="px-4 py-2.5 border-t border-white/5 text-center">
+                                <a href="{{ route('kepala.laporan') }}" class="text-xs text-blue-400 hover:text-blue-300 font-semibold transition">
+                                    Lihat Laporan Lengkap →
+                                </a>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 3. Date Time -->
-                    <div class="hidden lg:flex items-center gap-2 text-right border-l border-slate-700 pl-6">
-                        <i class="far fa-calendar-alt text-blue-400"></i>
-                        <div>
-                            <div class="text-sm font-semibold text-white" id="current-date">Sabtu, 21 Februari 2026</div>
-                            <div class="text-xs text-slate-400" id="current-time">11:37:39</div>
-                        </div>
+                    <div class="hidden lg:block w-px h-6 bg-white/10"></div>
+
+                    <div class="hidden lg:block text-right">
+                        <div class="text-xs font-semibold text-white" id="current-date">—</div>
+                        <div class="text-[10px] text-slate-500 tabular-nums" id="current-time">—</div>
                     </div>
                 </div>
             </header>
 
-            <!-- PAGE CONTENT SCROLLABLE -->
-            <main class="flex-1 overflow-y-auto bg-[#0b1120] p-6 lg:p-8 scroll-smooth">
-                <div class="max-w-7xl mx-auto">
-                    @yield('content')
+            <!-- PAGE CONTENT -->
+            <main class="flex-1 overflow-y-auto bg-[#0b1120] scrollbar-dark">
+                <div class="p-4 lg:p-6 xl:p-8">
+                    <div class="max-w-7xl mx-auto">
+                        @yield('content')
+                    </div>
                 </div>
             </main>
         </div>
     </div>
 
-    <!-- Script Jam Realtime -->
     <script>
-        function updateTime() {
-            const now = new Date();
-            const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('current-date').textContent = now.toLocaleDateString('id-ID', optionsDate);
-            document.getElementById('current-time').textContent = now.toLocaleTimeString('id-ID');
-        }
-        setInterval(updateTime, 1000);
-        updateTime();
+        (function () {
+            function updateTime() {
+                const now = new Date();
+                const el_d = document.getElementById('current-date');
+                const el_t = document.getElementById('current-time');
+                if (el_d) el_d.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                if (el_t) el_t.textContent = now.toLocaleTimeString('id-ID');
+            }
+            updateTime();
+            setInterval(updateTime, 1000);
+        })();
     </script>
 
     @stack('scripts')

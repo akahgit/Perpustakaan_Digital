@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Perpustakaan Digital')</title>
+    <title>@yield('title', 'Perpustakan Digital')</title>
 
     <!-- Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -19,6 +19,10 @@
 
     <!-- Alpine JS untuk interaksi (Mobile Menu, Dropdown) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Swiper.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -36,21 +40,25 @@
 </head>
 
 <!-- Body dengan background gelap sesuai design -->
-<body class="bg-[#050505] text-white antialiased selection:bg-purple-500/30 selection:text-purple-200" 
+<body class="bg-[#0f172a] text-white antialiased selection:bg-indigo-500/30 selection:text-indigo-200" 
       x-data="{ mobileMenuOpen: false, profileDropdownOpen: false }">
 
+    <!-- TOAST NOTIFICATION SYSTEM -->
+    @include('components.toast-notification')
+    @include('components.confirm-modal')
+
     <!-- NAVBAR ATAS (Fixed Top) -->
-    <nav class="fixed top-0 left-0 right-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-[#0f172a]/80 backdrop-blur-xl border-b border-white/5">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 
                 <!-- 1. LOGO (Kiri) -->
                 <div class="flex items-center gap-3 flex-shrink-0">
-                    <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
-                        <i class="fas fa-book-open text-white text-lg"></i>
-                    </div>
+                    <img src="{{ asset('asset/logo.jpeg') }}"
+                         alt="Logo Perpustakan Digital"
+                         class="w-10 h-10 rounded-xl object-cover shadow-lg shadow-slate-900/30 ring-1 ring-white/10">
                     <div class="leading-tight">
-                        <div class="font-bold text-lg tracking-tight">Perpustakaan<span class="text-purple-400">Digital</span></div>
+                        <div class="font-bold text-lg tracking-tight">Perpustakan<span class="text-purple-400">Digital</span></div>
                     </div>
                 </div>
 
@@ -75,6 +83,10 @@
                     <a href="{{ route('tentang') }}" 
                        class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('tentang') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
                         Tentang
+                    </a>
+                    <a href="{{ route('kontak') }}" 
+                       class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 {{ request()->routeIs('kontak') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                        Kontak Kami
                     </a>
                 </div>
 
@@ -155,6 +167,7 @@
                 <a href="{{ route('peminjaman') }}" class="block px-4 py-3 rounded-xl text-base font-medium {{ request()->routeIs('peminjaman') ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30' : 'text-gray-300 hover:bg-white/5' }}">Peminjaman Saya</a>
                 <a href="{{ route('riwayat') }}" class="block px-4 py-3 rounded-xl text-base font-medium {{ request()->routeIs('riwayat') ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30' : 'text-gray-300 hover:bg-white/5' }}">Riwayat</a>
                 <a href="{{ route('tentang') }}" class="block px-4 py-3 rounded-xl text-base font-medium {{ request()->routeIs('tentang') ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30' : 'text-gray-300 hover:bg-white/5' }}">Tentang</a>
+                <a href="{{ route('kontak') }}" class="block px-4 py-3 rounded-xl text-base font-medium {{ request()->routeIs('kontak') ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30' : 'text-gray-300 hover:bg-white/5' }}">Kontak Kami</a>
                 
                 <div class="border-t border-white/10 my-4 pt-4">
                     @auth
@@ -209,6 +222,7 @@
                         <li><a href="{{ route('katalog') }}" class="hover:text-purple-400 transition">Katalog Buku</a></li>
                         <li><a href="{{ route('peminjaman') }}" class="hover:text-purple-400 transition">Peminjaman</a></li>
                         <li><a href="{{ route('riwayat') }}" class="hover:text-purple-400 transition">Riwayat</a></li>
+                        <li><a href="{{ route('kontak') }}" class="hover:text-purple-400 transition">Kontak Kami</a></li>
                     </ul>
                 </div>
 
@@ -249,7 +263,7 @@
             </div>
             
             <div class="border-t border-white/5 pt-8 text-center text-sm text-gray-500">
-                &copy; {{ date('Y') }} Perpustakaan Digital. All rights reserved.
+                &copy; {{ date('Y') }} Perpustakan Digital. All rights reserved.
             </div>
         </div>
     </footer>
